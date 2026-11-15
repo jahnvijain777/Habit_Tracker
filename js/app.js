@@ -1,6 +1,6 @@
 /**
- * app.js - Main Application Orchestrator
- * Handles navigation, month switching, settings, themes, dashboard cards, and notifications.
+ * app.js - Application Orchestrator v3
+ * Handles navigation, month switching, settings, dashboard, toasts, and swipe navigation.
  */
 
 class App {
@@ -8,58 +8,50 @@ class App {
     this.activeSection = 'dashboard';
     const now = new Date();
     this.activeYearMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    this._swipeStartX = 0;
+    this._swipeStartY = 0;
+    // Nav order for swipe gesture
+    this._navOrder = ['dashboard', 'habits', 'pomodoro', 'calendar', 'weekly', 'goals', 'analytics', 'settings'];
   }
 
   init() {
     this.applySettingsTheme();
-    this.setupNavigation();
-    this.setupMonthNavigation();
-    this.setupHeaderActions();
-    this.setupSettingsView();
-    this.setupQuickAddModal();
+    this._setupNavigation();
+    this._setupMonthNavigation();
+    this._setupHeaderActions();
+    this._setupSettingsView();
+    this._setupQuickAddModal();
+    this._setupSwipe();
 
-    // Initialize sub-managers
+    // Sub-managers
     window.habitsManager.init();
-    window.dailyLogManager.init();
     window.calendarManager.init();
     window.weeklyManager.init();
     window.goalsManager.init();
     window.analyticsManager.init();
+    window.pomodoroManager.init();
+    window.customizeManager.init();
 
-    // Render initial view
-    this.updateMonthHeader();
+    this._updateMonthHeader();
     this.refreshAllSections();
 
-    // Lucide icon generation
-    if (window.lucide) {
-      window.lucide.createIcons();
-    }
+    if (window.lucide) window.lucide.createIcons();
   }
 
+  /* ======== Theme ====================================================== */
   applySettingsTheme() {
-    const settings = window.storage.getSettings();
-    
-    // Theme Mode: light or dark
-    if (settings.theme === 'dark') {
-      document.documentElement.classList.add('dark-theme');
-    } else {
-      document.documentElement.classList.remove('dark-theme');
-    }
-
-    // Accent theme
-    const accent = settings.accentColor || 'sage';
-    document.documentElement.setAttribute('data-accent', accent);
+    const s = window.storage.getSettings();
+    document.documentElement.classList.toggle('dark-theme', s.theme === 'dark');
+    document.documentElement.setAttribute('data-accent', s.accentColor || 'sage');
   }
 
-  setupNavigation() {
-    // Sidebar nav links
+  /* ======== Navigation ================================================= */
+  _setupNavigation() {
     document.querySelectorAll('.nav-item').forEach(item => {
-      item.addEventListener('click', (e) => {
+      item.addEventListener('click', e => {
         e.preventDefault();
-        const sectionId = item.dataset.section;
-        this.switchSection(sectionId);
-
-        // Close mobile drawer if open
+        this.switchSection(item.dataset.section);
+        // Close mobile sidebar
         const sidebar = document.getElementById('appSidebar');
         const overlay = document.getElementById('mobileSidebarOverlay');
         if (sidebar && sidebar.classList.contains('mobile-open')) {
@@ -69,18 +61,15 @@ class App {
       });
     });
 
-    // Mobile hamburger toggle
-    const hamburgerBtn = document.getElementById('mobileMenuToggle');
+    const hamBtn = document.getElementById('mobileMenuToggle');
     const sidebar = document.getElementById('appSidebar');
     const overlay = document.getElementById('mobileSidebarOverlay');
-
-    if (hamburgerBtn && sidebar) {
-      hamburgerBtn.addEventListener('click', () => {
+    if (hamBtn && sidebar) {
+      hamBtn.addEventListener('click', () => {
         sidebar.classList.toggle('mobile-open');
         if (overlay) overlay.classList.toggle('active');
       });
     }
-
     if (overlay) {
       overlay.addEventListener('click', () => {
         if (sidebar) sidebar.classList.remove('mobile-open');
@@ -91,569 +80,445 @@ class App {
 
   switchSection(sectionId) {
     this.activeSection = sectionId;
-
-    // Update active nav item
-    document.querySelectorAll('.nav-item').forEach(item => {
-      item.classList.toggle('active', item.dataset.section === sectionId);
-    });
-
-    // Update view panels
-    document.querySelectorAll('.view-section').forEach(view => {
-      view.classList.toggle('active', view.id === `section-${sectionId}`);
-    });
-
-    // Re-render specific active views
-    this.renderCurrentView();
-
-    // Scroll to top
+    document.querySelectorAll('.nav-item').forEach(i => i.classList.toggle('active', i.dataset.section === sectionId));
+    document.querySelectorAll('.view-section').forEach(v => v.classList.toggle('active', v.id === `section-${sectionId}`));
+    const stickerCanvas = document.getElementById('stickerCanvas');
+    if (stickerCanvas) stickerCanvas.style.display = (sectionId === 'dashboard') ? '' : 'none';
+    this._renderCurrentView();
     window.scrollTo({ top: 0, behavior: 'smooth' });
-
-    if (window.lucide) {
-      window.lucide.createIcons();
-    }
+    if (window.lucide) window.lucide.createIcons();
   }
 
-  renderCurrentView() {
+  _renderCurrentView() {
     switch (this.activeSection) {
-      case 'dashboard':
-        this.renderDashboard();
-        break;
-      case 'habits':
-        window.habitsManager.render();
-        break;
-      case 'daily-log':
-        window.dailyLogManager.render();
-        break;
-      case 'calendar':
-        window.calendarManager.render();
-        break;
-      case 'weekly':
-        window.weeklyManager.render();
-        break;
-      case 'goals':
-        window.goalsManager.render();
-        break;
-      case 'analytics':
-        window.analyticsManager.renderAll();
-        break;
-      case 'settings':
-        this.renderSettings();
-        break;
+      case 'dashboard':  this._renderDashboard(); break;
+      case 'habits':     window.habitsManager.render(); break;
+      case 'pomodoro':   window.pomodoroManager._updateUI(); break;
+      case 'calendar':   window.calendarManager.render(); break;
+      case 'weekly':     window.weeklyManager.render(); break;
+      case 'goals':      window.goalsManager.render(); break;
+      case 'analytics':  window.analyticsManager.renderAll(); break;
+      case 'settings':   this._renderSettings(); break;
     }
   }
 
-  setupMonthNavigation() {
-    // Header prev / next
-    const prevBtn = document.getElementById('globalPrevMonthBtn');
-    const nextBtn = document.getElementById('globalNextMonthBtn');
-    const todayBtn = document.getElementById('globalTodayJumpBtn');
+  /* ======== Swipe Navigation (mobile) ================================== */
+  _setupSwipe() {
+    const main = document.getElementById('appMainContent');
+    if (!main) return;
 
-    if (prevBtn) {
-      prevBtn.addEventListener('click', () => this.navigateMonth(-1));
-    }
-    if (nextBtn) {
-      nextBtn.addEventListener('click', () => this.navigateMonth(1));
-    }
-    if (todayBtn) {
-      todayBtn.addEventListener('click', () => this.jumpToCurrentMonth());
-    }
+    main.addEventListener('touchstart', e => {
+      this._swipeStartX = e.touches[0].clientX;
+      this._swipeStartY = e.touches[0].clientY;
+    }, { passive: true });
+
+    main.addEventListener('touchend', e => {
+      const dx = e.changedTouches[0].clientX - this._swipeStartX;
+      const dy = e.changedTouches[0].clientY - this._swipeStartY;
+      if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+        const idx = this._navOrder.indexOf(this.activeSection);
+        if (dx < 0 && idx < this._navOrder.length - 1) {
+          this.switchSection(this._navOrder[idx + 1]);
+        } else if (dx > 0 && idx > 0) {
+          this.switchSection(this._navOrder[idx - 1]);
+        }
+      }
+    }, { passive: true });
+  }
+
+  /* ======== Month Navigation =========================================== */
+  _setupMonthNavigation() {
+    document.getElementById('globalPrevMonthBtn')?.addEventListener('click', () => this.navigateMonth(-1));
+    document.getElementById('globalNextMonthBtn')?.addEventListener('click', () => this.navigateMonth(1));
+    document.getElementById('globalTodayJumpBtn')?.addEventListener('click', () => this.jumpToCurrentMonth());
+    document.getElementById('calPrevMonthBtn')?.addEventListener('click', () => this.navigateMonth(-1));
+    document.getElementById('calNextMonthBtn')?.addEventListener('click', () => this.navigateMonth(1));
+    document.getElementById('calTodayBtn')?.addEventListener('click', () => this.jumpToCurrentMonth());
   }
 
   navigateMonth(offset) {
-    const [yearStr, monthStr] = this.activeYearMonth.split('-');
-    let year = parseInt(yearStr, 10);
-    let month = parseInt(monthStr, 10) + offset;
-
-    if (month > 12) {
-      month = 1;
-      year += 1;
-    } else if (month < 1) {
-      month = 12;
-      year -= 1;
-    }
-
-    this.setActiveMonth(`${year}-${String(month).padStart(2, '0')}`);
+    let [y, m] = this.activeYearMonth.split('-').map(Number);
+    m += offset;
+    if (m > 12) { m = 1; y++; }
+    if (m < 1)  { m = 12; y--; }
+    this.setActiveMonth(`${y}-${String(m).padStart(2, '0')}`);
   }
 
   jumpToCurrentMonth() {
     const now = new Date();
-    const currentYM = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-    this.setActiveMonth(currentYM);
+    this.setActiveMonth(`${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`);
   }
 
-  setActiveMonth(yearMonthStr, autoRender = true) {
-    this.activeYearMonth = yearMonthStr;
-    this.updateMonthHeader();
-    if (autoRender) {
-      this.refreshAllSections();
+  setActiveMonth(ym, render = true) {
+    this.activeYearMonth = ym;
+    this._updateMonthHeader();
+    if (render) this.refreshAllSections();
+  }
+
+  _updateMonthHeader() {
+    const [y, m] = this.activeYearMonth.split('-').map(Number);
+    const monthName = new Date(y, m - 1, 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+    document.querySelectorAll('.active-month-text').forEach(el => el.textContent = monthName);
+
+    const s = window.storage.getSettings();
+    const nameEls = document.querySelectorAll('#dashboardGreetingName, #headerUserName');
+    nameEls.forEach(el => { if (el) el.textContent = s.userName || 'Jahnvi'; });
+
+    const dateEl = document.getElementById('dashboardLiveDate');
+    if (dateEl) {
+      dateEl.textContent = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
     }
   }
 
-  updateMonthHeader() {
-    const [yearStr, monthStr] = this.activeYearMonth.split('-');
-    const dateObj = new Date(parseInt(yearStr, 10), parseInt(monthStr, 10) - 1, 1);
-    const monthName = dateObj.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-
-    // Update all month title elements in DOM
-    document.querySelectorAll('.active-month-text').forEach(el => {
-      el.textContent = monthName;
+  /* ======== Header Actions ============================================= */
+  _setupHeaderActions() {
+    document.getElementById('globalQuickAddBtn')?.addEventListener('click', () => {
+      document.getElementById('quickAddModal')?.classList.add('active');
+      document.body.classList.add('modal-open');
     });
-
-    // Update greeting
-    const settings = window.storage.getSettings();
-    const greetingEl = document.getElementById('dashboardGreetingName');
-    if (greetingEl) {
-      greetingEl.textContent = settings.userName || 'Jahnvi';
-    }
-
-    const liveDateEl = document.getElementById('dashboardLiveDate');
-    if (liveDateEl) {
-      const now = new Date();
-      liveDateEl.textContent = now.toLocaleDateString('en-US', {
-        weekday: 'long',
-        month: 'short',
-        day: 'numeric'
-      });
-    }
+    // Mobile action bar button
+    document.getElementById('mobileQuickAddBtn')?.addEventListener('click', () => {
+      document.getElementById('quickAddModal')?.classList.add('active');
+      document.body.classList.add('modal-open');
+    });
   }
 
-  setupHeaderActions() {
-    const quickAddBtn = document.getElementById('globalQuickAddBtn');
-    if (quickAddBtn) {
-      quickAddBtn.addEventListener('click', () => {
-        const modal = document.getElementById('quickAddModal');
-        if (modal) {
-          modal.classList.add('active');
-          document.body.classList.add('modal-open');
-        }
-      });
-    }
-
-    const settingsShortcut = document.getElementById('globalSettingsBtn');
-    if (settingsShortcut) {
-      settingsShortcut.addEventListener('click', () => {
-        this.switchSection('settings');
-      });
-    }
-  }
-
-  setupQuickAddModal() {
+  /* ======== Quick-Add Modal =========================================== */
+  _setupQuickAddModal() {
     document.querySelectorAll('[data-close-modal="quickAddModal"]').forEach(btn => {
       btn.addEventListener('click', () => this.closeAllModals());
     });
-
-    const optHabit = document.getElementById('quickOptAddHabit');
-    if (optHabit) {
-      optHabit.addEventListener('click', () => {
-        this.closeAllModals();
-        window.habitsManager.openAddModal();
-      });
-    }
-
-    const optLog = document.getElementById('quickOptDailyLog');
-    if (optLog) {
-      optLog.addEventListener('click', () => {
-        this.closeAllModals();
-        this.switchSection('daily-log');
-      });
-    }
-
-    const optGoal = document.getElementById('quickOptAddGoal');
-    if (optGoal) {
-      optGoal.addEventListener('click', () => {
-        this.closeAllModals();
-        window.goalsManager.openAddModal();
-      });
-    }
+    document.getElementById('quickOptAddHabit')?.addEventListener('click', () => {
+      this.closeAllModals();
+      window.habitsManager.openAddModal();
+    });
+    document.getElementById('quickOptFocusTimer')?.addEventListener('click', () => {
+      this.closeAllModals();
+      this.switchSection('pomodoro');
+    });
+    document.getElementById('quickOptAddGoal')?.addEventListener('click', () => {
+      this.closeAllModals();
+      window.goalsManager.openAddModal();
+    });
   }
 
   closeAllModals() {
-    document.querySelectorAll('.modal-backdrop').forEach(modal => {
-      modal.classList.remove('active');
-    });
+    document.querySelectorAll('.modal-backdrop').forEach(m => m.classList.remove('active'));
     document.body.classList.remove('modal-open');
   }
 
   refreshAllSections(renderActive = true) {
-    if (renderActive) {
-      this.renderCurrentView();
-    }
-    // Also update dashboard summary metrics
-    this.updateDashboardMetrics();
-    this.renderDashboardTodayHabits();
+    if (renderActive) this._renderCurrentView();
+    this._updateDashboardMetrics();
+    this._renderDashboardTodayHabits();
   }
 
-  // --- Dashboard Logic ---
-  renderDashboard() {
-    this.updateDashboardMetrics();
-    this.renderDashboardTodayHabits();
-    this.renderDashboardGoalsOverview();
+  /* ======== Dashboard ================================================= */
+  _renderDashboard() {
+    this._updateDashboardMetrics();
+    this._renderDashboardTodayHabits();
+    this._renderDashboardGoals();
     window.analyticsManager.renderDashboardCharts();
+    window.pomodoroManager._syncDashboardCount();
+    window.customizeManager._renderStickers();
   }
 
-  updateDashboardMetrics() {
-    const currentYM = this.activeYearMonth;
-    const [yearStr, monthStr] = currentYM.split('-');
-    const year = parseInt(yearStr, 10);
-    const month = parseInt(monthStr, 10);
-    const daysInMonth = new Date(year, month, 0).getDate();
-
+  _updateDashboardMetrics() {
+    const ym = this.activeYearMonth;
+    const [y, m] = ym.split('-').map(Number);
+    const daysInMonth = new Date(y, m, 0).getDate();
     const habits = window.storage.getHabits();
-    const habitLogs = window.storage.getHabitLogs(currentYM);
-    const dailyLogs = window.storage.getAllDailyLogs();
-    const goals = window.storage.getGoalsForMonth(currentYM);
-
+    const habitLogs = window.storage.getHabitLogs(ym);
     const today = new Date();
-    const isCurrentMonth = (today.getFullYear() === year && (today.getMonth() + 1) === month);
-    const evaluatedDays = isCurrentMonth ? Math.min(today.getDate(), daysInMonth) : daysInMonth;
+    const isCurrentMonth = today.getFullYear() === y && (today.getMonth() + 1) === m;
+    const evalDays = isCurrentMonth ? Math.min(today.getDate(), daysInMonth) : daysInMonth;
 
-    let totalStudyHours = 0;
-    let totalCodingHours = 0;
-    let totalHabitCompletions = 0;
-    let bestStreak = 0;
-    let bestStreakHabitName = '';
-
-    // Calculate habits completion & streaks
+    let totalHabitDone = 0;
     habits.forEach(h => {
       const logs = habitLogs[h.id] || {};
-      let tempStreak = 0;
-      let habitBestStreak = 0;
-
-      for (let d = 1; d <= evaluatedDays; d++) {
-        if (logs[d]) {
-          totalHabitCompletions++;
-          tempStreak++;
-          if (tempStreak > habitBestStreak) habitBestStreak = tempStreak;
-        } else {
-          tempStreak = 0;
-        }
-      }
-
-      if (habitBestStreak > bestStreak) {
-        bestStreak = habitBestStreak;
-        bestStreakHabitName = h.name;
-      }
+      for (let d = 1; d <= evalDays; d++) if (logs[d]) totalHabitDone++;
     });
 
-    // Calculate daily logs hours
-    for (let d = 1; d <= evaluatedDays; d++) {
-      const dateStr = `${currentYM}-${String(d).padStart(2, '0')}`;
-      const log = dailyLogs[dateStr];
-      if (log) {
-        if (log.studyHours) totalStudyHours += log.studyHours;
-        if (log.codingHours) totalCodingHours += log.codingHours;
+    const possible = habits.length * evalDays;
+    const habitPct = possible > 0 ? Math.round((totalHabitDone / possible) * 100) : 0;
+
+    // Study & focus hours (from past logs + pomodoro sessions)
+    let totalStudy = 0;
+    try {
+      const dl = JSON.parse(localStorage.getItem('lumina_daily_logs_v3') || localStorage.getItem('habit_tracker_daily_logs_v2') || '{}');
+      for (let d = 1; d <= evalDays; d++) {
+        const dateStr = `${ym}-${String(d).padStart(2, '0')}`;
+        if (dl[dateStr]) totalStudy += (dl[dateStr].studyHours || 0);
       }
-    }
+    } catch (e) {}
 
-    const totalPossibleHabits = habits.length * evaluatedDays;
-    const habitPct = totalPossibleHabits > 0 ? Math.round((totalHabitCompletions / totalPossibleHabits) * 100) : 0;
+    // Pomodoro focus sessions contribution
+    try {
+      const pomoStats = window.storage.getPomodoroStats();
+      const settings = window.storage.getSettings();
+      const workMin = Number(settings.pomodoroWork) || 25;
+      if (pomoStats && pomoStats.totalSessions > 0) {
+        totalStudy += (pomoStats.totalSessions * workMin) / 60;
+      }
+    } catch (e) {}
 
-    // Goals completed
+    const goals = window.storage.getGoalsForMonth(ym);
     const completedGoals = goals.filter(g => g.status === 'completed').length;
+    const goalPct = goals.length > 0 ? Math.round((completedGoals / goals.length) * 100) : habitPct;
 
-    // Overall Monthly Performance score (composite of habits + hours consistency)
-    const expectedHoursMonth = (evaluatedDays * 4); // target ~4h deep work/day
-    const actualLoggedHours = totalStudyHours + totalCodingHours;
-    const hourRatio = expectedHoursMonth > 0 ? Math.min(100, Math.round((actualLoggedHours / expectedHoursMonth) * 100)) : 0;
-    const overallScore = Math.round((habitPct * 0.6) + (hourRatio * 0.4));
-
-    // Update Metric Cards
-    const elScore = document.getElementById('metricMonthlyScore');
-    if (elScore) elScore.textContent = `${overallScore}%`;
-
-    const elHabitPct = document.getElementById('metricHabitPct');
-    if (elHabitPct) elHabitPct.textContent = `${habitPct}%`;
-
-    const elGoals = document.getElementById('metricGoalsCompleted');
-    if (elGoals) elGoals.textContent = `${completedGoals}/${goals.length}`;
-
-    const elStudy = document.getElementById('metricStudyHours');
-    if (elStudy) elStudy.textContent = `${totalStudyHours.toFixed(1)} hrs`;
-
-    const elCoding = document.getElementById('metricCodingHours');
-    if (elCoding) elCoding.textContent = `${totalCodingHours.toFixed(1)} hrs`;
-
-    const elStreak = document.getElementById('metricBestStreak');
-    if (elStreak) {
-      elStreak.innerHTML = `${bestStreak}d <small class="streak-subname">${bestStreakHabitName ? escapeHTML(bestStreakHabitName) : '🔥'}</small>`;
+    let overallScore;
+    if (totalStudy > 0) {
+      const hourTarget = Math.max(1, evalDays * 2);
+      const hourScore = Math.min(100, Math.round((totalStudy / hourTarget) * 100));
+      overallScore = Math.round(habitPct * 0.5 + goalPct * 0.3 + hourScore * 0.2);
+    } else {
+      overallScore = goals.length > 0 ? Math.round(habitPct * 0.7 + goalPct * 0.3) : habitPct;
     }
+
+    const setEl = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+    setEl('metricMonthlyScore', `${overallScore}%`);
+    setEl('metricHabitPct', `${habitPct}%`);
+    setEl('metricStudyHours', totalStudy > 0 ? `${totalStudy.toFixed(1)} hrs` : '0.0 hrs');
   }
 
-  renderDashboardTodayHabits() {
+  _renderDashboardTodayHabits() {
     const container = document.getElementById('dashboardTodayHabitsList');
     if (!container) return;
-
     const now = new Date();
-    const currentYM = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    const ym = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
     const today = now.getDate();
-
     const habits = window.storage.getHabits();
-    const habitLogs = window.storage.getHabitLogs(currentYM);
-
-    let completedToday = 0;
+    const habitLogs = window.storage.getHabitLogs(ym);
+    let done = 0;
     let html = '';
-
-    habits.slice(0, 8).forEach(h => {
-      const isChecked = !!(habitLogs[h.id] && habitLogs[h.id][today]);
-      if (isChecked) completedToday++;
-
-      html += `
-        <div class="today-habit-card ${isChecked ? 'is-done' : ''}" onclick="window.app.toggleTodayHabit('${h.id}')">
-          <div class="today-check-box">
-            ${isChecked ? '<i data-lucide="check"></i>' : ''}
-          </div>
-          <div class="today-habit-info">
-            <span class="today-habit-name">${escapeHTML(h.name)}</span>
-            <span class="category-pill cat-${h.category.toLowerCase()}">${h.category}</span>
-          </div>
+    habits.forEach(h => {
+      const checked = !!(habitLogs[h.id] && habitLogs[h.id][today]);
+      if (checked) done++;
+      html += `<div class="today-habit-card ${checked ? 'is-done' : ''}" onclick="window.app.toggleTodayHabit('${h.id}')">
+        <div class="today-check-box">${checked ? '<i data-lucide="check"></i>' : ''}</div>
+        <div class="today-habit-info">
+          <span class="today-habit-name">${escapeHTML(h.name)}</span>
+          <span class="category-pill cat-${h.category.toLowerCase()}">${h.category}</span>
         </div>
-      `;
+      </div>`;
     });
-
     container.innerHTML = html;
-
-    const todayCountEl = document.getElementById('todayHabitsDoneBadge');
-    if (todayCountEl) {
-      todayCountEl.textContent = `${completedToday} / ${habits.length} Done`;
-    }
-
+    const badge = document.getElementById('todayHabitsDoneBadge');
+    if (badge) badge.textContent = `${done} / ${habits.length} Done`;
     if (window.lucide) window.lucide.createIcons();
   }
 
   toggleTodayHabit(habitId) {
     const now = new Date();
     const ym = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-    const today = now.getDate();
-
-    window.storage.toggleHabitDay(ym, habitId, today);
+    window.storage.toggleHabitDay(ym, habitId, now.getDate());
     this.refreshAllSections(false);
-    this.renderDashboardTodayHabits();
+    this._renderDashboardTodayHabits();
   }
 
-  renderDashboardGoalsOverview() {
+  _renderDashboardGoals() {
     const container = document.getElementById('dashboardGoalsOverviewList');
     if (!container) return;
-
     const goals = window.storage.getGoalsForMonth(this.activeYearMonth);
-    const activeGoals = goals.filter(g => g.status === 'in_progress' || g.status === 'not_started').slice(0, 4);
-
-    if (activeGoals.length === 0) {
-      container.innerHTML = `
-        <div class="dash-empty-goals">
-          <i data-lucide="check-circle-2"></i>
-          <span>All active monthly goals achieved or none set!</span>
-        </div>
-      `;
+    const active = goals.filter(g => g.status === 'in_progress' || g.status === 'not_started').slice(0, 4);
+    if (!active.length) {
+      container.innerHTML = `<div class="dash-empty-goals"><i data-lucide="check-circle-2"></i><span>All active goals achieved!</span></div>`;
       if (window.lucide) window.lucide.createIcons();
       return;
     }
-
-    let html = '';
-    activeGoals.forEach(g => {
-      const cur = Number(g.currentValue) || 0;
-      const target = Number(g.targetValue) || 1;
-      const pct = Math.min(100, Math.round((cur / target) * 100));
-
-      html += `
-        <div class="dash-goal-row">
-          <div class="dash-goal-info">
-            <span class="dash-goal-title">${escapeHTML(g.title)}</span>
-            <span class="dash-goal-nums">${cur}/${target} ${escapeHTML(g.unit || '')}</span>
-          </div>
-          <div class="dash-goal-bar-wrap">
-            <div class="dash-goal-bar-fill cat-${(g.category || 'personal').toLowerCase()}" style="width: ${pct}%;"></div>
-          </div>
+    container.innerHTML = active.map(g => {
+      const pct = Math.min(100, Math.round(((Number(g.currentValue) || 0) / (Number(g.targetValue) || 1)) * 100));
+      return `<div class="dash-goal-row">
+        <div class="dash-goal-info">
+          <span class="dash-goal-title">${escapeHTML(g.title)}</span>
+          <span class="dash-goal-nums">${g.currentValue}/${g.targetValue} ${escapeHTML(g.unit || '')}</span>
         </div>
-      `;
-    });
-
-    container.innerHTML = html;
-    if (window.lucide) window.lucide.createIcons();
+        <div class="dash-goal-bar-wrap">
+          <div class="dash-goal-bar-fill cat-${(g.category || 'personal').toLowerCase()}" style="width:${pct}%"></div>
+        </div>
+      </div>`;
+    }).join('');
   }
 
-  // --- Settings View Logic ---
-  setupSettingsView() {
+  /* ======== Settings View ============================================= */
+  _setupSettingsView() {
     // Theme buttons
     document.querySelectorAll('.theme-option-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         document.querySelectorAll('.theme-option-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
-        const theme = btn.dataset.theme;
-        window.storage.saveSettings({ theme });
+        window.storage.saveSettings({ theme: btn.dataset.theme });
         this.applySettingsTheme();
-        this.showToast(`Switched to ${theme} mode`, 'info');
+        this.showToast(`Switched to ${btn.dataset.theme} mode`, 'info');
       });
     });
 
-    // Accent buttons
+    // Accent
     document.querySelectorAll('.accent-picker-swatch').forEach(btn => {
       btn.addEventListener('click', () => {
         document.querySelectorAll('.accent-picker-swatch').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
-        const accent = btn.dataset.accent;
-        window.storage.saveSettings({ accentColor: accent });
+        window.storage.saveSettings({ accentColor: btn.dataset.accent });
         this.applySettingsTheme();
-        this.showToast(`Accent theme updated: ${capitalize(accent)}`, 'info');
+        this.showToast(`Accent: ${btn.dataset.accent}`, 'info');
       });
     });
 
-    // Week start radio
-    document.querySelectorAll('input[name="weekStartsOn"]').forEach(radio => {
-      radio.addEventListener('change', (e) => {
-        const val = parseInt(e.target.value, 10);
-        window.storage.saveSettings({ weekStartsOn: val });
-        this.showToast('Calendar start of week updated', 'info');
+    // Week start
+    document.querySelectorAll('input[name="weekStartsOn"]').forEach(r => {
+      r.addEventListener('change', e => {
+        window.storage.saveSettings({ weekStartsOn: parseInt(e.target.value, 10) });
         window.calendarManager.render();
+        this.showToast('Calendar preference saved', 'info');
       });
     });
 
-    // User Name Save
-    const saveNameBtn = document.getElementById('saveUserNameBtn');
-    if (saveNameBtn) {
-      saveNameBtn.addEventListener('click', () => {
-        const nameInput = document.getElementById('settingUserNameInput');
-        const name = nameInput.value.trim() || 'Jahnvi';
-        window.storage.saveSettings({ userName: name });
-        this.updateMonthHeader();
-        this.showToast('Name saved successfully', 'success');
-      });
-    }
+    // Name
+    document.getElementById('saveUserNameBtn')?.addEventListener('click', () => {
+      const name = window.sanitize(document.getElementById('settingUserNameInput')?.value?.trim() || 'Jahnvi');
+      window.storage.saveSettings({ userName: name });
+      this._updateMonthHeader();
+      this.showToast('Name saved', 'success');
+    });
+
+    // Pomodoro settings
+    document.getElementById('savePomoSettingsBtn')?.addEventListener('click', () => {
+      const work = parseInt(document.getElementById('pomoWorkInput')?.value, 10) || 25;
+      const shortB = parseInt(document.getElementById('pomoShortInput')?.value, 10) || 5;
+      const longB = parseInt(document.getElementById('pomoLongInput')?.value, 10) || 15;
+      const autoAdv = document.getElementById('pomoAutoAdvanceToggle')?.checked || false;
+      window.storage.saveSettings({ pomodoroWork: work, pomodoroShortBreak: shortB, pomodoroLongBreak: longB, pomodoroAutoAdvance: autoAdv });
+      window.pomodoroManager._reset(true);
+      this.showToast('Pomodoro settings saved', 'success');
+    });
 
     // Export JSON
-    const exportJsonBtn = document.getElementById('exportJsonBtn');
-    if (exportJsonBtn) {
-      exportJsonBtn.addEventListener('click', () => {
-        const jsonStr = window.storage.exportBackupJSON();
-        this.downloadFile(jsonStr, `habit_tracker_backup_${this.activeYearMonth}.json`, 'application/json');
-        this.showToast('JSON backup downloaded', 'success');
-      });
-    }
+    document.getElementById('exportJsonBtn')?.addEventListener('click', () => {
+      const json = window.storage.exportBackupJSON();
+      this._download(json, `lumina_backup_${this.activeYearMonth}.json`, 'application/json');
+      this.showToast('JSON backup downloaded', 'success');
+    });
 
-    // Import JSON File
-    const importFileInput = document.getElementById('importJsonFileInput');
-    if (importFileInput) {
-      importFileInput.addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          const content = event.target.result;
-          const result = window.storage.importBackupJSON(content, true);
-          if (result.success) {
-            this.showToast('Data restored successfully!', 'success');
-            this.applySettingsTheme();
-            this.refreshAllSections();
-          } else {
-            this.showToast(`Import error: ${result.error}`, 'error');
-          }
-        };
-        reader.readAsText(file);
-      });
-    }
+    // Import JSON
+    document.getElementById('importJsonFileInput')?.addEventListener('change', e => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = ev => {
+        const result = window.storage.importBackupJSON(ev.target.result, true);
+        if (result.success) {
+          this.applySettingsTheme();
+          this.refreshAllSections();
+          window.customizeManager._applyState();
+          this.showToast('Data restored!', 'success');
+        } else {
+          this.showToast(`Import failed: ${result.error}`, 'error');
+        }
+      };
+      reader.readAsText(file);
+    });
 
     // Export CSV
-    const exportCsvBtn = document.getElementById('exportCsvBtn');
-    if (exportCsvBtn) {
-      exportCsvBtn.addEventListener('click', () => {
-        const csv = window.storage.generateCSV(this.activeYearMonth);
-        this.downloadFile(csv, `Monthly_Report_${this.activeYearMonth}.csv`, 'text/csv');
-        this.showToast(`Monthly CSV exported for ${this.activeYearMonth}`, 'success');
-      });
-    }
+    document.getElementById('exportCsvBtn')?.addEventListener('click', () => {
+      const csv = window.storage.generateCSV(this.activeYearMonth);
+      this._download(csv, `Lumina_Report_${this.activeYearMonth}.csv`, 'text/csv');
+      this.showToast('CSV report downloaded', 'success');
+    });
 
-    // Seed Demo Data button
-    const seedBtn = document.getElementById('seedDemoDataBtn');
-    if (seedBtn) {
-      seedBtn.addEventListener('click', () => {
-        if (confirm(`Seed sample data for ${this.activeYearMonth}? This will populate realistic logs, streaks, and goals.`)) {
-          window.storage.seedInitialMonthData(this.activeYearMonth);
-          this.refreshAllSections();
-          this.showToast(`Demo data loaded for ${this.activeYearMonth}!`, 'success');
-        }
-      });
-    }
+    // Seed demo
+    document.getElementById('seedDemoDataBtn')?.addEventListener('click', () => {
+      if (confirm(`Seed sample data for ${this.activeYearMonth}?`)) {
+        window.storage.seedInitialMonthData(this.activeYearMonth);
+        this.refreshAllSections();
+        this.showToast('Demo data loaded!', 'success');
+      }
+    });
 
-    // Clear All Data
-    const clearDataBtn = document.getElementById('clearAllDataBtn');
-    if (clearDataBtn) {
-      clearDataBtn.addEventListener('click', () => {
-        if (confirm('CAUTION: Are you sure you want to delete all tracker records? This cannot be undone.')) {
-          window.storage.clearAllData();
-          this.refreshAllSections();
-          this.showToast('All application data cleared', 'info');
-        }
-      });
-    }
+    // Clear data
+    document.getElementById('clearAllDataBtn')?.addEventListener('click', () => {
+      if (confirm('Delete ALL application data? This cannot be undone.')) {
+        window.storage.clearAllData();
+        this.refreshAllSections();
+        window.customizeManager._applyState();
+        this.showToast('All data cleared', 'info');
+      }
+    });
+
+    // Dismiss backup banner
+    document.getElementById('backupBannerDismiss')?.addEventListener('click', () => {
+      const banner = document.getElementById('backupReminderBanner');
+      if (banner) banner.style.display = 'none';
+      window.storage.updateLastBackupDate(); // silence for 7 days
+    });
   }
 
-  renderSettings() {
-    const settings = window.storage.getSettings();
-
-    // Set user name
+  _renderSettings() {
+    const s = window.storage.getSettings();
     const nameInput = document.getElementById('settingUserNameInput');
-    if (nameInput) nameInput.value = settings.userName || '';
+    if (nameInput) nameInput.value = s.userName || '';
 
-    // Set theme active button
-    document.querySelectorAll('.theme-option-btn').forEach(btn => {
-      btn.classList.toggle('active', btn.dataset.theme === (settings.theme || 'light'));
-    });
+    document.querySelectorAll('.theme-option-btn').forEach(btn =>
+      btn.classList.toggle('active', btn.dataset.theme === (s.theme || 'light'))
+    );
+    document.querySelectorAll('.accent-picker-swatch').forEach(btn =>
+      btn.classList.toggle('active', btn.dataset.accent === (s.accentColor || 'sage'))
+    );
+    const weekRadio = document.querySelector(`input[name="weekStartsOn"][value="${s.weekStartsOn ?? 1}"]`);
+    if (weekRadio) weekRadio.checked = true;
 
-    // Set accent active swatch
-    document.querySelectorAll('.accent-picker-swatch').forEach(btn => {
-      btn.classList.toggle('active', btn.dataset.accent === (settings.accentColor || 'sage'));
-    });
-
-    // Set weekStartsOn radio
-    const radio = document.querySelector(`input[name="weekStartsOn"][value="${settings.weekStartsOn ?? 1}"]`);
-    if (radio) radio.checked = true;
+    // Pomodoro settings
+    const workIn = document.getElementById('pomoWorkInput');
+    const shortIn = document.getElementById('pomoShortInput');
+    const longIn = document.getElementById('pomoLongInput');
+    const autoAdv = document.getElementById('pomoAutoAdvanceToggle');
+    if (workIn) workIn.value = s.pomodoroWork || 25;
+    if (shortIn) shortIn.value = s.pomodoroShortBreak || 5;
+    if (longIn) longIn.value = s.pomodoroLongBreak || 15;
+    if (autoAdv) autoAdv.checked = !!s.pomodoroAutoAdvance;
   }
 
-  downloadFile(content, fileName, mimeType) {
+  /* ======== Toast Notifications ======================================= */
+  showToast(message, type = 'info') {
+    const container = document.getElementById('toastContainer');
+    if (!container) return;
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    const icons = { success: 'check-circle', error: 'alert-circle', info: 'info' };
+    const undoAction = type === 'info' && window._undoStack && window._undoStack.length > 0 ? window._undoStack[window._undoStack.length - 1] : null;
+
+    toast.innerHTML = `<i data-lucide="${icons[type] || 'info'}"></i><span>${escapeHTML(message)}</span>${
+      undoAction && message.toLowerCase().includes('delete') ? `<button class="toast-undo-btn" onclick="window.app.performUndo(this.closest('.toast'))">Undo</button>` : ''
+    }`;
+    container.appendChild(toast);
+    if (window.lucide) window.lucide.createIcons();
+    setTimeout(() => { toast.classList.add('fade-out'); setTimeout(() => toast.remove(), 300); }, 3500);
+  }
+
+  performUndo(toastEl) {
+    const action = window.popUndo();
+    if (action) {
+      action.restoreFn();
+      this.refreshAllSections();
+      this.showToast(`Undone: ${action.description}`, 'success');
+    }
+    if (toastEl) toastEl.remove();
+  }
+
+  _download(content, fileName, mimeType) {
     const blob = new Blob([content], { type: mimeType });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = fileName;
+    const a = Object.assign(document.createElement('a'), { href: url, download: fileName });
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
   }
-
-  showToast(message, type = 'info') {
-    const container = document.getElementById('toastContainer');
-    if (!container) return;
-
-    const toast = document.createElement('div');
-    toast.className = `toast toast-${type}`;
-
-    const iconMap = {
-      success: 'check-circle',
-      error: 'alert-circle',
-      info: 'info'
-    };
-
-    toast.innerHTML = `
-      <i data-lucide="${iconMap[type] || 'info'}"></i>
-      <span>${escapeHTML(message)}</span>
-    `;
-
-    container.appendChild(toast);
-    if (window.lucide) window.lucide.createIcons();
-
-    // Auto remove after 3.2 seconds
-    setTimeout(() => {
-      toast.classList.add('fade-out');
-      setTimeout(() => toast.remove(), 300);
-    }, 3200);
-  }
 }
 
-// Global App Instance
-window.app = new App();
+function escapeHTML(str) {
+  if (!str) return '';
+  return String(str).replace(/[&<>'"]/g, t => ({ '&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;' }[t] || t));
+}
 
-// Document Ready Initialization
-document.addEventListener('DOMContentLoaded', () => {
-  window.app.init();
-});
+window.app = new App();
+document.addEventListener('DOMContentLoaded', () => window.app.init());

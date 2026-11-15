@@ -1,355 +1,215 @@
-<!DOCTYPE html>git 
+<!DOCTYPE html>
 <html lang="en" data-accent="sage">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Lumina — Premium Habit & Personal Performance Tracker</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'none';">
+  <meta name="theme-color" content="#6B8E71">
+  <title>Lumina — Habit & Performance Tracker</title>
+  <link rel="manifest" href="manifest.json">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
-  
-  <!-- Vendor Scripts (Local offline bundle with CDN fallback) -->
   <script src="assets/vendor/chart.umd.min.js"></script>
-  <script>
-    if (typeof Chart === 'undefined') {
-      document.write('<script src="https://cdn.jsdelivr.net/npm/chart.js"><\/script>');
-    }
-  </script>
   <script src="assets/vendor/lucide.min.js"></script>
-  <script>
-    if (typeof lucide === 'undefined') {
-      document.write('<script src="https://unpkg.com/lucide@latest"><\/script>');
-    }
-  </script>
 </head>
 <body>
 
   <!-- Mobile Top Bar -->
   <header class="mobile-top-bar">
-    <button class="mobile-menu-btn" id="mobileMenuToggle" aria-label="Toggle navigation menu">
+    <button class="mobile-menu-btn" id="mobileMenuToggle" aria-label="Open menu">
       <i data-lucide="menu"></i>
     </button>
     <div class="mobile-brand">
       <div class="brand-spark"></div>
       <span class="brand-text">Lumina</span>
     </div>
-    <button class="mobile-action-btn" onclick="document.getElementById('globalQuickAddBtn').click()" aria-label="Quick Add">
+    <button class="mobile-action-btn" id="mobileQuickAddBtn" aria-label="Quick add">
       <i data-lucide="plus"></i>
     </button>
   </header>
 
-  <!-- Mobile Sidebar Backdrop -->
   <div class="mobile-overlay" id="mobileSidebarOverlay"></div>
 
-  <!-- Main App Shell -->
   <div class="app-shell">
 
-    <!-- Sidebar Navigation -->
+    <!-- SIDEBAR -->
     <aside class="app-sidebar" id="appSidebar">
       <div class="sidebar-header">
         <div class="brand-container">
-          <div class="brand-icon">
-            <span class="brand-dot"></span>
-          </div>
+          <div class="brand-icon"><div class="brand-dot"></div></div>
           <div class="brand-meta">
             <span class="brand-name">Lumina</span>
-            <span class="brand-subtitle">Performance OS</span>
+            <span class="brand-subtitle">Focus OS</span>
           </div>
         </div>
       </div>
 
-      <!-- Sidebar Month Selector -->
       <div class="sidebar-month-selector">
         <div class="month-selector-inner">
-          <button class="btn-icon-nav" id="globalPrevMonthBtn" title="Previous Month">
-            <i data-lucide="chevron-left"></i>
-          </button>
-          <span class="active-month-text" id="sidebarMonthLabel">November 2026</span>
-          <button class="btn-icon-nav" id="globalNextMonthBtn" title="Next Month">
-            <i data-lucide="chevron-right"></i>
-          </button>
+          <button class="btn-icon-nav" id="globalPrevMonthBtn" title="Previous Month"><i data-lucide="chevron-left"></i></button>
+          <span class="active-month-text">November 2026</span>
+          <button class="btn-icon-nav" id="globalNextMonthBtn" title="Next Month"><i data-lucide="chevron-right"></i></button>
         </div>
-        <button class="btn-today-jump" id="globalTodayJumpBtn" title="Jump to Current Month">
-          <i data-lucide="rotate-ccw"></i> Current Month
-        </button>
+        <button class="btn-today-jump" id="globalTodayJumpBtn"><i data-lucide="rotate-ccw"></i> Current Month</button>
       </div>
 
-      <!-- Navigation Links -->
       <nav class="sidebar-nav">
         <div class="nav-group-label">OVERVIEW</div>
-        <a href="#dashboard" class="nav-item active" data-section="dashboard">
-          <i data-lucide="layout-dashboard"></i>
-          <span>Dashboard</span>
-        </a>
-        <a href="#habits" class="nav-item" data-section="habits">
-          <i data-lucide="check-circle-2"></i>
-          <span>Habit Tracker</span>
-        </a>
-        <a href="#daily-log" class="nav-item" data-section="daily-log">
-          <i data-lucide="edit-3"></i>
-          <span>Daily Log</span>
-        </a>
-        <a href="#calendar" class="nav-item" data-section="calendar">
-          <i data-lucide="calendar"></i>
-          <span>Calendar</span>
-        </a>
-
+        <a href="#" class="nav-item active" data-section="dashboard"><i data-lucide="layout-dashboard"></i><span>Dashboard</span></a>
+        <a href="#" class="nav-item" data-section="habits"><i data-lucide="check-circle-2"></i><span>Habit Tracker</span></a>
+        <a href="#" class="nav-item" data-section="pomodoro"><i data-lucide="timer"></i><span>Focus Timer</span></a>
+        <a href="#" class="nav-item" data-section="calendar"><i data-lucide="calendar"></i><span>Calendar</span></a>
         <div class="nav-group-label">PERFORMANCE</div>
-        <a href="#weekly" class="nav-item" data-section="weekly">
-          <i data-lucide="calendar-range"></i>
-          <span>Weekly Review</span>
-        </a>
-        <a href="#goals" class="nav-item" data-section="goals">
-          <i data-lucide="target"></i>
-          <span>Monthly Goals</span>
-        </a>
-        <a href="#analytics" class="nav-item" data-section="analytics">
-          <i data-lucide="line-chart"></i>
-          <span>Analytics & Insights</span>
-        </a>
-
+        <a href="#" class="nav-item" data-section="weekly"><i data-lucide="calendar-range"></i><span>Weekly Review</span></a>
+        <a href="#" class="nav-item" data-section="goals"><i data-lucide="target"></i><span>Monthly Goals</span></a>
+        <a href="#" class="nav-item" data-section="analytics"><i data-lucide="line-chart"></i><span>Analytics</span></a>
         <div class="nav-group-label">SYSTEM</div>
-        <a href="#settings" class="nav-item" data-section="settings">
-          <i data-lucide="sliders"></i>
-          <span>Settings</span>
-        </a>
+        <a href="#" class="nav-item" data-section="settings"><i data-lucide="sliders"></i><span>Settings</span></a>
       </nav>
 
-      <!-- Sidebar Quick Add Action -->
       <div class="sidebar-action-wrap">
         <button class="btn btn-primary btn-full-width" id="globalQuickAddBtn">
           <i data-lucide="plus"></i> Quick Action
         </button>
       </div>
 
-      <!-- Sidebar User Profile Info -->
       <div class="sidebar-footer">
         <div class="user-pill-card">
-          <div class="user-avatar">
-            <i data-lucide="sparkles"></i>
-          </div>
+          <div class="user-avatar"><i data-lucide="sparkles"></i></div>
           <div class="user-info">
             <span class="user-name" id="dashboardGreetingName">Jahnvi</span>
             <span class="user-status-text">Monthly Focus</span>
           </div>
-          <button class="btn-icon-tiny" id="globalSettingsBtn" title="Settings">
-            <i data-lucide="settings"></i>
-          </button>
         </div>
       </div>
     </aside>
 
-    <!-- Main Content Area -->
-    <main class="app-main-content">
+    <!-- MAIN CONTENT -->
+    <main class="app-main-content" id="appMainContent">
 
-      <!-- Global Top Header -->
+      <!-- Sticker Canvas (floating over dashboard) -->
+      <div class="sticker-canvas" id="stickerCanvas"></div>
+
+      <!-- Backup Reminder Banner -->
+      <div class="backup-reminder-banner" id="backupReminderBanner" style="display:none">
+        <i data-lucide="archive"></i>
+        <span>It's been 7+ days since your last JSON backup. <button onclick="document.getElementById('exportJsonBtn').click()" class="btn-link">Export now</button></span>
+        <button class="btn-icon-tiny" id="backupBannerDismiss" title="Dismiss"><i data-lucide="x"></i></button>
+      </div>
+
+      <!-- App Header -->
       <header class="app-header">
         <div class="header-left">
-          <div class="header-greeting-wrap">
-            <h1 class="header-greeting">Welcome back, <span class="accent-text" id="headerUserName">Jahnvi</span> 🌸</h1>
-            <p class="header-subtext" id="dashboardLiveDate">Sunday, Nov 15, 2026</p>
-          </div>
+          <h1 class="header-greeting">Welcome back, <span class="accent-text" id="headerUserName">Jahnvi</span> 🌸</h1>
+          <p class="header-subtext" id="dashboardLiveDate">Sunday, Nov 16</p>
         </div>
-
         <div class="header-right">
           <div class="month-pill-badge">
             <i data-lucide="calendar-heart"></i>
             <span class="active-month-text">November 2026</span>
           </div>
-          <button class="btn btn-secondary header-btn" onclick="window.app.switchSection('daily-log')">
-            <i data-lucide="pen-tool"></i> Log Today
-          </button>
         </div>
       </header>
 
-      <!-- VIEW 1: DASHBOARD -->
+      <!-- ========== VIEW: DASHBOARD ========== -->
       <section class="view-section active" id="section-dashboard">
-        
-        <!-- Performance Overview Cards Grid -->
+
+        <!-- 3 Metric Cards -->
         <div class="metrics-grid">
           <div class="card metric-card">
             <div class="metric-top">
               <span class="metric-title">Monthly Performance</span>
-              <div class="metric-icon-wrap icon-score">
-                <i data-lucide="gauge"></i>
-              </div>
+              <div class="metric-icon-wrap icon-score"><i data-lucide="gauge"></i></div>
             </div>
-            <div class="metric-val" id="metricMonthlyScore">84%</div>
-            <div class="metric-foot">
-              <span class="metric-badge positive"><i data-lucide="trending-up"></i> Composite Index</span>
-              <span class="metric-sub">Habits & deep work</span>
-            </div>
+            <div class="metric-val" id="metricMonthlyScore">—</div>
+            <div class="metric-foot"><span class="metric-badge positive">Composite Index</span></div>
           </div>
-
           <div class="card metric-card">
             <div class="metric-top">
               <span class="metric-title">Habit Consistency</span>
-              <div class="metric-icon-wrap icon-habits">
-                <i data-lucide="check-check"></i>
-              </div>
+              <div class="metric-icon-wrap icon-habits"><i data-lucide="check-check"></i></div>
             </div>
-            <div class="metric-val" id="metricHabitPct">78%</div>
-            <div class="metric-foot">
-              <span class="metric-badge neutral">Active Month</span>
-              <span class="metric-sub">Across all daily checks</span>
-            </div>
+            <div class="metric-val" id="metricHabitPct">—</div>
+            <div class="metric-foot"><span class="metric-badge neutral">Month to date</span></div>
           </div>
-
           <div class="card metric-card">
             <div class="metric-top">
-              <span class="metric-title">Goals Completed</span>
-              <div class="metric-icon-wrap icon-goals">
-                <i data-lucide="target"></i>
-              </div>
+              <span class="metric-title">Study & Focus Hours</span>
+              <div class="metric-icon-wrap icon-study"><i data-lucide="book-open"></i></div>
             </div>
-            <div class="metric-val" id="metricGoalsCompleted">3/5</div>
-            <div class="metric-foot">
-              <span class="metric-badge positive"><i data-lucide="check"></i> 60% Target</span>
-              <span class="metric-sub">Monthly milestones</span>
-            </div>
-          </div>
-
-          <div class="card metric-card">
-            <div class="metric-top">
-              <span class="metric-title">Total Study Time</span>
-              <div class="metric-icon-wrap icon-study">
-                <i data-lucide="book-open"></i>
-              </div>
-            </div>
-            <div class="metric-val" id="metricStudyHours">48.5 hrs</div>
-            <div class="metric-foot">
-              <span class="metric-badge neutral">Academic</span>
-              <span class="metric-sub">Recorded sessions</span>
-            </div>
-          </div>
-
-          <div class="card metric-card">
-            <div class="metric-top">
-              <span class="metric-title">Total Coding Hours</span>
-              <div class="metric-icon-wrap icon-code">
-                <i data-lucide="code-2"></i>
-              </div>
-            </div>
-            <div class="metric-val" id="metricCodingHours">56.0 hrs</div>
-            <div class="metric-foot">
-              <span class="metric-badge positive"><i data-lucide="zap"></i> Tech Focus</span>
-              <span class="metric-sub">Projects & practice</span>
-            </div>
-          </div>
-
-          <div class="card metric-card">
-            <div class="metric-top">
-              <span class="metric-title">Best Habit Streak</span>
-              <div class="metric-icon-wrap icon-streak">
-                <i data-lucide="flame"></i>
-              </div>
-            </div>
-            <div class="metric-val" id="metricBestStreak">14d <small class="streak-subname">Morning Routine</small></div>
-            <div class="metric-foot">
-              <span class="metric-badge streak-badge">🔥 Longest chain</span>
-              <span class="metric-sub">Keep the momentum</span>
-            </div>
+            <div class="metric-val" id="metricStudyHours">—</div>
+            <div class="metric-foot"><span class="metric-badge neutral">Tracked focus time</span></div>
           </div>
         </div>
 
-        <!-- Dashboard Layout: Left Column & Right Column -->
+        <!-- Pomodoro Today Badge -->
+        <div class="pomodoro-dash-row">
+          <div class="card pomo-dash-card" onclick="window.app.switchSection('pomodoro')">
+            <i data-lucide="timer"></i>
+            <span id="dashPomodoroCount">🍅 0 sessions today</span>
+            <span class="pomo-dash-cta">Open Focus Timer →</span>
+          </div>
+        </div>
+
+        <!-- Dashboard two-column layout -->
         <div class="dashboard-columns-grid">
-          
-          <!-- Left Column: Quick Habits Check + Habit Trend Line Chart + Weekly Breakdown -->
           <div class="dash-col-main">
 
-            <!-- Today's Quick Check-in Widget -->
-            <div class="card dash-widget-card">
+            <!-- Today's Habits Check-in -->
+            <div class="card dash-widget-card" id="widgetTodayCheckIn">
               <div class="widget-header">
-                <div>
-                  <h3 class="widget-title">Today's Quick Check-In</h3>
-                  <p class="widget-subtitle">Tap to toggle your habits directly for today</p>
-                </div>
-                <span class="badge-count" id="todayHabitsDoneBadge">8 / 13 Done</span>
+                <div><h3 class="widget-title">Today's Habits</h3><p class="widget-subtitle">Tap to toggle for today</p></div>
+                <span class="badge-count" id="todayHabitsDoneBadge">0 / 0 Done</span>
               </div>
-              <div class="today-habits-grid" id="dashboardTodayHabitsList">
-                <!-- Dynamically generated habit cards -->
-              </div>
+              <div class="today-habits-grid" id="dashboardTodayHabitsList"></div>
             </div>
 
-            <!-- Habit Completion Trend Chart -->
-            <div class="card dash-widget-card">
+            <!-- Habit Trend Chart -->
+            <div class="card dash-widget-card" id="widgetHabitTrend">
               <div class="widget-header">
-                <div>
-                  <h3 class="widget-title">Monthly Habit Completion Trend</h3>
-                  <p class="widget-subtitle">Daily completion percentage across the active month</p>
-                </div>
-                <button class="btn-icon-tiny" onclick="window.app.switchSection('habits')" title="Go to Habit Matrix">
-                  <i data-lucide="arrow-up-right"></i>
-                </button>
+                <div><h3 class="widget-title">Monthly Habit Trend</h3><p class="widget-subtitle">Daily completion % across the month</p></div>
+                <button class="btn-icon-tiny" onclick="window.app.switchSection('habits')" title="Go to Habit Matrix"><i data-lucide="arrow-up-right"></i></button>
               </div>
-              <div class="chart-container-sm">
-                <canvas id="dashHabitTrendChart"></canvas>
-              </div>
+              <div class="chart-container-sm"><canvas id="dashHabitTrendChart"></canvas></div>
             </div>
 
-            <!-- Weekly Productivity Breakdown Chart -->
-            <div class="card dash-widget-card">
+            <!-- Weekly Habit Rate Chart -->
+            <div class="card dash-widget-card" id="widgetWeeklyBar">
               <div class="widget-header">
-                <div>
-                  <h3 class="widget-title">Weekly Deep Work Breakdown</h3>
-                  <p class="widget-subtitle">Comparison of Study and Coding hours per week</p>
-                </div>
-                <button class="btn-icon-tiny" onclick="window.app.switchSection('weekly')" title="Go to Weekly Review">
-                  <i data-lucide="arrow-up-right"></i>
-                </button>
+                <div><h3 class="widget-title">Weekly Consistency</h3><p class="widget-subtitle">Habit completion rate per calendar week</p></div>
+                <button class="btn-icon-tiny" onclick="window.app.switchSection('weekly')" title="Go to Weekly Review"><i data-lucide="arrow-up-right"></i></button>
               </div>
-              <div class="chart-container-sm">
-                <canvas id="dashWeeklyBarChart"></canvas>
-              </div>
+              <div class="chart-container-sm"><canvas id="dashWeeklyBarChart"></canvas></div>
             </div>
 
           </div>
-
-          <!-- Right Column: Active Goals + Category Distribution + Daily Activity Heatmap -->
           <div class="dash-col-side">
 
-            <!-- Active Goals Progress Card -->
-            <div class="card dash-widget-card">
+            <!-- Active Goals -->
+            <div class="card dash-widget-card" id="widgetGoalsOverview">
               <div class="widget-header">
-                <div>
-                  <h3 class="widget-title">Active Goals Progress</h3>
-                  <p class="widget-subtitle">Milestones in motion this month</p>
-                </div>
-                <button class="btn-icon-tiny" onclick="window.app.switchSection('goals')" title="Manage Goals">
-                  <i data-lucide="arrow-up-right"></i>
-                </button>
+                <div><h3 class="widget-title">Active Goals</h3><p class="widget-subtitle">Monthly milestones in progress</p></div>
+                <button class="btn-icon-tiny" onclick="window.app.switchSection('goals')" title="Manage Goals"><i data-lucide="arrow-up-right"></i></button>
               </div>
-              <div class="dash-goals-list" id="dashboardGoalsOverviewList">
-                <!-- Dynamically populated goals -->
-              </div>
+              <div class="dash-goals-list" id="dashboardGoalsOverviewList"></div>
             </div>
 
-            <!-- Category Productivity Doughnut -->
-            <div class="card dash-widget-card">
+            <!-- Category Chart -->
+            <div class="card dash-widget-card" id="widgetCategoryChart">
               <div class="widget-header">
-                <div>
-                  <h3 class="widget-title">Productivity by Category</h3>
-                  <p class="widget-subtitle">Balanced distribution of energy</p>
-                </div>
+                <div><h3 class="widget-title">By Category</h3><p class="widget-subtitle">Habit distribution across categories</p></div>
               </div>
-              <div class="chart-container-doughnut">
-                <canvas id="dashCategoryChart"></canvas>
-              </div>
+              <div class="chart-container-doughnut"><canvas id="dashCategoryChart"></canvas></div>
             </div>
 
-            <!-- Daily Activity Heatmap Visualization -->
-            <div class="card dash-widget-card">
+            <!-- Activity Heatmap -->
+            <div class="card dash-widget-card" id="widgetHeatmap">
               <div class="widget-header">
-                <div>
-                  <h3 class="widget-title">Daily Activity Matrix</h3>
-                  <p class="widget-subtitle">Output intensity for each day</p>
-                </div>
+                <div><h3 class="widget-title">Activity Matrix</h3><p class="widget-subtitle">Daily habit intensity</p></div>
               </div>
-              <div class="heatmap-grid" id="dashDailyHeatmap">
-                <!-- Heatmap cells populated dynamically -->
-              </div>
+              <div class="heatmap-grid" id="dashDailyHeatmap"></div>
               <div class="heatmap-legend">
                 <span>Low</span>
                 <div class="legend-swatch level-0"></div>
@@ -365,301 +225,192 @@
         </div>
       </section>
 
-      <!-- VIEW 2: DAILY HABIT TRACKER -->
+      <!-- ========== VIEW: HABIT TRACKER ========== -->
       <section class="view-section" id="section-habits">
         <div class="section-top-bar">
           <div class="section-title-wrap">
             <h2>Monthly Habit Tracker</h2>
-            <p class="section-subtitle">Calendar matrix view of your daily consistency and streaks</p>
+            <p class="section-subtitle">Calendar matrix — click any cell to toggle daily completion</p>
           </div>
           <div class="section-actions-wrap">
             <div class="search-box">
               <i data-lucide="search"></i>
-              <input type="text" id="habitSearchInput" placeholder="Search habits..." class="search-input">
+              <input type="text" id="habitSearchInput" placeholder="Search habits…" class="search-input">
             </div>
-            <button class="btn btn-primary" id="openAddHabitBtn">
-              <i data-lucide="plus"></i> Add Habit
-            </button>
+            <button class="btn btn-primary" id="openAddHabitBtn"><i data-lucide="plus"></i> Add Habit</button>
           </div>
         </div>
-
-        <!-- Category Filter Chips -->
         <div class="category-filters-scroller">
-          <button class="habit-category-chip active" data-category="all">All Habits</button>
-          <button class="habit-category-chip cat-personal" data-category="Personal">Personal</button>
-          <button class="habit-category-chip cat-academic" data-category="Academic">Academic</button>
+          <button class="habit-category-chip active" data-category="all">All</button>
+          <button class="habit-category-chip cat-personal"   data-category="Personal">Personal</button>
+          <button class="habit-category-chip cat-academic"   data-category="Academic">Academic</button>
           <button class="habit-category-chip cat-technology" data-category="Technology">Technology</button>
-          <button class="habit-category-chip cat-health" data-category="Health">Health</button>
-          <button class="habit-category-chip cat-creative" data-category="Creative">Creative</button>
-          <button class="habit-category-chip cat-wellbeing" data-category="Wellbeing">Wellbeing</button>
+          <button class="habit-category-chip cat-health"     data-category="Health">Health</button>
+          <button class="habit-category-chip cat-creative"   data-category="Creative">Creative</button>
+          <button class="habit-category-chip cat-wellbeing"  data-category="Wellbeing">Wellbeing</button>
         </div>
-
-        <!-- Habit Matrix Container -->
-        <div class="habit-table-outer card" id="habitTableContainer">
-          <!-- Dynamically generated table with sticky column -->
-        </div>
+        <div class="habit-table-outer card" id="habitTableContainer"></div>
       </section>
 
-      <!-- VIEW 3: DAILY PERFORMANCE LOG -->
-      <section class="view-section" id="section-daily-log">
+      <!-- ========== VIEW: FOCUS TIMER (Pomodoro) ========== -->
+      <section class="view-section" id="section-pomodoro">
         <div class="section-top-bar">
           <div class="section-title-wrap">
-            <h2>Daily Performance Log</h2>
-            <p class="section-subtitle">Record your focused hours, exercise, mood, and daily reflections</p>
-          </div>
-
-          <!-- Date Navigation Bar -->
-          <div class="daily-log-date-nav">
-            <button class="btn-icon-tiny" id="logPrevDayBtn" title="Previous Day">
-              <i data-lucide="chevron-left"></i>
-            </button>
-            <input type="date" id="logDateInput" class="date-picker-input">
-            <button class="btn-icon-tiny" id="logNextDayBtn" title="Next Day">
-              <i data-lucide="chevron-right"></i>
-            </button>
-            <button class="btn-subtle-pill" id="logTodayJumpBtn">Today</button>
+            <h2>Focus Timer</h2>
+            <p class="section-subtitle">Pomodoro technique with custom intervals and stopwatch</p>
           </div>
         </div>
 
-        <!-- Daily Log Content: Form & Day Log Scroller -->
-        <div class="daily-log-grid">
-          
-          <!-- Logging Form Card -->
-          <div class="card daily-form-card">
-            <div class="daily-form-header">
-              <div class="date-display-badge">
-                <i data-lucide="calendar"></i>
-                <span id="logDateDisplay">Sunday, November 15, 2026</span>
-              </div>
-              <div class="total-productive-pill">
-                <span>Focused Total:</span>
-                <strong id="dailyTotalProductiveHours">0.0 hrs</strong>
+        <div class="pomodoro-layout">
+
+          <!-- Timer Card -->
+          <div class="card pomo-timer-card">
+            <!-- Mode Tabs -->
+            <div class="pomo-mode-tabs">
+              <button class="pomo-mode-btn active" data-mode="pomodoro">🍅 Pomodoro</button>
+              <button class="pomo-mode-btn" data-mode="short">☕ Short Break</button>
+              <button class="pomo-mode-btn" data-mode="long">🌿 Long Break</button>
+              <button class="pomo-mode-btn" data-mode="stopwatch">⏱ Stopwatch</button>
+            </div>
+
+            <!-- SVG Ring -->
+            <div class="pomo-ring-wrap">
+              <svg class="pomo-ring-svg" viewBox="0 0 220 220" xmlns="http://www.w3.org/2000/svg">
+                <circle class="pomo-ring-bg" cx="110" cy="110" r="90"/>
+                <circle class="pomo-ring-progress" id="pomoRingProgress" cx="110" cy="110" r="90" transform="rotate(-90 110 110)"/>
+              </svg>
+              <div class="pomo-ring-center">
+                <div class="pomo-time-display" id="pomoTimeDisplay">25:00</div>
+                <div class="pomo-phase-label" id="pomoPhaseLabel">🍅 Focus Session</div>
+                <div class="pomo-session-badge" id="pomoSessionCount">Session 1</div>
               </div>
             </div>
 
-            <form id="dailyLogForm" class="daily-form">
-              
-              <!-- Row 1: Study & Coding -->
-              <div class="form-row-2">
-                <div class="form-group">
-                  <div class="label-with-actions">
-                    <label for="logStudyHours"><i data-lucide="book-open"></i> Study Hours</label>
-                    <div class="quick-preset-btns">
-                      <button type="button" class="btn-pill-xs quick-hour-add" data-target="logStudyHours" data-add="0.5">+30m</button>
-                      <button type="button" class="btn-pill-xs quick-hour-add" data-target="logStudyHours" data-add="1.0">+1h</button>
-                      <button type="button" class="btn-pill-xs quick-hour-add" data-target="logStudyHours" data-add="2.0">+2h</button>
-                    </div>
-                  </div>
-                  <input type="number" id="logStudyHours" step="0.5" min="0" max="24" class="form-input" placeholder="0">
-                </div>
+            <!-- Controls -->
+            <div class="pomo-controls">
+              <button class="btn btn-pomo-start" id="pomoStartPauseBtn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg>
+                Start
+              </button>
+              <button class="btn btn-secondary pomo-ctrl-btn" id="pomoResetBtn" title="Reset">
+                <i data-lucide="rotate-ccw"></i> Reset
+              </button>
+              <button class="btn btn-secondary pomo-ctrl-btn" id="pomoSkipBtn" title="Skip to break" style="display:none">
+                <i data-lucide="skip-forward"></i> Skip
+              </button>
+              <button class="btn btn-secondary pomo-ctrl-btn" id="pomoLapBtn" title="Lap" style="display:none">
+                <i data-lucide="flag"></i> Lap
+              </button>
+            </div>
 
-                <div class="form-group">
-                  <div class="label-with-actions">
-                    <label for="logCodingHours"><i data-lucide="code"></i> Coding Hours</label>
-                    <div class="quick-preset-btns">
-                      <button type="button" class="btn-pill-xs quick-hour-add" data-target="logCodingHours" data-add="0.5">+30m</button>
-                      <button type="button" class="btn-pill-xs quick-hour-add" data-target="logCodingHours" data-add="1.0">+1h</button>
-                      <button type="button" class="btn-pill-xs quick-hour-add" data-target="logCodingHours" data-add="2.0">+2h</button>
-                    </div>
-                  </div>
-                  <input type="number" id="logCodingHours" step="0.5" min="0" max="24" class="form-input" placeholder="0">
-                </div>
-              </div>
+            <!-- Laps list (stopwatch mode) -->
+            <div id="pomoLapsContainer" style="display:none">
+              <div class="pomo-laps-header">Laps</div>
+              <ul class="pomo-laps-list" id="pomoLapsList"></ul>
+            </div>
+          </div>
 
-              <!-- Row 2: Reading & Creative -->
-              <div class="form-row-2">
-                <div class="form-group">
-                  <label for="logReadingMins"><i data-lucide="book"></i> Reading Time (minutes)</label>
-                  <input type="number" id="logReadingMins" step="5" min="0" max="720" class="form-input" placeholder="0">
+          <!-- Stats & Info Panel -->
+          <div class="pomo-side-panel">
+            <div class="card pomo-stats-card">
+              <h4 class="card-sm-title"><i data-lucide="bar-chart-2"></i> Session Stats</h4>
+              <div class="pomo-stats-list">
+                <div class="pomo-stat-row">
+                  <span>Today's sessions</span>
+                  <strong id="pomoDailyCountSide">0</strong>
                 </div>
-
-                <div class="form-group">
-                  <label for="logCreativeHours"><i data-lucide="palette"></i> Creative Work (hours)</label>
-                  <input type="number" id="logCreativeHours" step="0.5" min="0" max="24" class="form-input" placeholder="0">
+                <div class="pomo-stat-row">
+                  <span>Total all-time</span>
+                  <strong id="pomoTotalCountSide">0</strong>
                 </div>
               </div>
+            </div>
 
-              <!-- Row 3: Exercise -->
-              <div class="form-row-2">
+            <div class="card pomo-tips-card">
+              <h4 class="card-sm-title"><i data-lucide="lightbulb"></i> Focus Tips</h4>
+              <ul class="pomo-tips-list">
+                <li>🧠 Close unnecessary browser tabs before starting.</li>
+                <li>📵 Silence notifications for the session duration.</li>
+                <li>💧 Drink water during your break.</li>
+                <li>🚶 Move around during long breaks.</li>
+                <li>✍️ Write down distracting thoughts to review later.</li>
+              </ul>
+            </div>
+
+            <div class="card pomo-custom-card">
+              <h4 class="card-sm-title"><i data-lucide="settings-2"></i> Quick Settings</h4>
+              <div class="pomo-quick-settings">
                 <div class="form-group">
-                  <label for="logExerciseMins"><i data-lucide="activity"></i> Exercise Duration (minutes)</label>
-                  <input type="number" id="logExerciseMins" step="5" min="0" max="360" class="form-input" placeholder="0">
+                  <label for="pomoWorkInput">Work (min)</label>
+                  <input type="number" id="pomoWorkInput" class="form-input" min="1" max="90" value="25">
                 </div>
-
                 <div class="form-group">
-                  <label for="logExerciseType"><i data-lucide="dumbbell"></i> Activity / Workout Type</label>
-                  <select id="logExerciseType" class="form-select">
-                    <option value="Running">Running / Cardio</option>
-                    <option value="Gym">Strength / Gym</option>
-                    <option value="Yoga">Yoga / Stretching</option>
-                    <option value="Walking">Walking / Movement</option>
-                    <option value="Cycling">Cycling</option>
-                    <option value="HIIT">HIIT / Calisthenics</option>
-                    <option value="Pilates">Pilates</option>
-                    <option value="Rest">Rest Day</option>
-                  </select>
+                  <label for="pomoShortInput">Short break (min)</label>
+                  <input type="number" id="pomoShortInput" class="form-input" min="1" max="30" value="5">
                 </div>
-              </div>
-
-              <!-- Row 4: Mood & Energy -->
-              <div class="form-row-2">
                 <div class="form-group">
-                  <label><i data-lucide="smile"></i> Mood</label>
-                  <input type="hidden" id="logMoodInput" value="">
-                  <div class="mood-selector-group">
-                    <button type="button" class="mood-selector-btn" data-mood="great" title="Great">🤩 Great</button>
-                    <button type="button" class="mood-selector-btn" data-mood="good" title="Good">😊 Good</button>
-                    <button type="button" class="mood-selector-btn" data-mood="neutral" title="Neutral">😐 Neutral</button>
-                    <button type="button" class="mood-selector-btn" data-mood="low" title="Low">🥱 Low</button>
-                    <button type="button" class="mood-selector-btn" data-mood="tough" title="Tough">😔 Tough</button>
-                  </div>
+                  <label for="pomoLongInput">Long break (min)</label>
+                  <input type="number" id="pomoLongInput" class="form-input" min="1" max="60" value="15">
                 </div>
-
-                <div class="form-group">
-                  <label><i data-lucide="battery-charging"></i> Energy Level (1-5)</label>
-                  <input type="hidden" id="logEnergyInput" value="">
-                  <div class="energy-selector-group">
-                    <button type="button" class="energy-chip-btn" data-energy="1">1</button>
-                    <button type="button" class="energy-chip-btn" data-energy="2">2</button>
-                    <button type="button" class="energy-chip-btn" data-energy="3">3</button>
-                    <button type="button" class="energy-chip-btn" data-energy="4">4</button>
-                    <button type="button" class="energy-chip-btn" data-energy="5">5</button>
-                  </div>
+                <div class="form-group form-group-inline">
+                  <label for="pomoAutoAdvanceToggle">Auto-advance phases</label>
+                  <input type="checkbox" id="pomoAutoAdvanceToggle" class="toggle-checkbox">
                 </div>
-              </div>
-
-              <!-- Notes -->
-              <div class="form-group">
-                <label for="logNotesInput"><i data-lucide="feather"></i> Reflections & Daily Journal</label>
-                <textarea id="logNotesInput" class="form-textarea" rows="3" placeholder="What worked well today? Blockers, wins, or lessons learned..."></textarea>
-              </div>
-
-              <!-- Save Action -->
-              <div class="form-actions-bar">
-                <button type="submit" class="btn btn-primary btn-save-log">
-                  <i data-lucide="save"></i> Save Day Performance
+                <button class="btn btn-primary btn-full-width" id="savePomoSettingsBtn">
+                  <i data-lucide="save"></i> Save Settings
                 </button>
               </div>
-
-            </form>
-          </div>
-
-          <!-- Day Log Quick Metrics & Month History -->
-          <div class="daily-side-wrap">
-            
-            <!-- Quick Summary Card -->
-            <div class="card day-summary-card">
-              <h4 class="card-sm-title"><i data-lucide="bar-chart-2"></i> Selected Day Summary</h4>
-              <div class="summary-stats-stack">
-                <div class="sum-row">
-                  <span>Study Hours:</span>
-                  <strong id="previewStudyHours">0h</strong>
-                </div>
-                <div class="sum-row">
-                  <span>Coding Hours:</span>
-                  <strong id="previewCodingHours">0h</strong>
-                </div>
-                <div class="sum-row">
-                  <span>Exercise:</span>
-                  <strong id="previewExerciseMins">0m</strong>
-                </div>
-                <div class="sum-row">
-                  <span>Habits Completed:</span>
-                  <strong id="previewHabitsDone">0 / 13</strong>
-                </div>
-              </div>
             </div>
-
-            <!-- Month Days History Scroller -->
-            <div class="card history-scroller-card">
-              <h4 class="card-sm-title"><i data-lucide="history"></i> Month History (Click to View/Edit)</h4>
-              <div id="dailyLogHistoryList">
-                <!-- Dynamically populated cards -->
-              </div>
-            </div>
-
           </div>
-
         </div>
       </section>
 
-      <!-- VIEW 4: CALENDAR VIEW -->
+      <!-- ========== VIEW: CALENDAR ========== -->
       <section class="view-section" id="section-calendar">
         <div class="section-top-bar">
           <div class="section-title-wrap">
             <h2>Monthly Calendar</h2>
-            <p class="section-subtitle">Click on any date to inspect details or check off habits</p>
+            <p class="section-subtitle">Click any date to view or toggle habits for that day</p>
           </div>
           <div class="calendar-controls">
-            <button class="btn-icon-tiny" id="calPrevMonthBtn" title="Previous Month">
-              <i data-lucide="chevron-left"></i>
-            </button>
+            <button class="btn-icon-tiny" id="calPrevMonthBtn"><i data-lucide="chevron-left"></i></button>
             <span class="cal-month-title" id="calendarMonthTitle">November 2026</span>
-            <button class="btn-icon-tiny" id="calNextMonthBtn" title="Next Month">
-              <i data-lucide="chevron-right"></i>
-            </button>
+            <button class="btn-icon-tiny" id="calNextMonthBtn"><i data-lucide="chevron-right"></i></button>
             <button class="btn-subtle-pill" id="calTodayBtn">Today</button>
           </div>
         </div>
-
         <div class="calendar-container card">
-          <!-- Calendar Weekday Headers -->
-          <div class="calendar-weekday-headers" id="calendarWeekdayHeaders">
-            <span>Mon</span>
-            <span>Tue</span>
-            <span>Wed</span>
-            <span>Thu</span>
-            <span>Fri</span>
-            <span>Sat</span>
-            <span>Sun</span>
+          <div class="calendar-weekday-headers">
+            <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
           </div>
-
-          <!-- Calendar Grid Cells -->
-          <div class="calendar-month-grid" id="calendarMonthGrid">
-            <!-- Dynamic 7-column calendar cells -->
-          </div>
+          <div class="calendar-month-grid" id="calendarMonthGrid"></div>
         </div>
       </section>
 
-      <!-- VIEW 5: WEEKLY PERFORMANCE -->
+      <!-- ========== VIEW: WEEKLY ========== -->
       <section class="view-section" id="section-weekly">
         <div class="section-top-bar">
           <div class="section-title-wrap">
-            <h2>Weekly Performance & Reviews</h2>
-            <p class="section-subtitle">Aggregated metrics calculated automatically from your daily logs</p>
+            <h2>Weekly Performance</h2>
+            <p class="section-subtitle">Aggregated habit consistency per calendar week</p>
           </div>
         </div>
-
-        <!-- Best Week Banner -->
-        <div id="bestWeekHighlightBanner">
-          <!-- Dynamically generated banner -->
-        </div>
-
-        <!-- Weekly Comparison Chart -->
+        <div id="bestWeekHighlightBanner"></div>
         <div class="card weekly-chart-card">
           <div class="widget-header">
-            <div>
-              <h3 class="widget-title">Weekly Deep Work Comparison</h3>
-              <p class="widget-subtitle">Study, coding, and creative hours across each week of the month</p>
-            </div>
+            <div><h3 class="widget-title">Weekly Consistency Comparison</h3><p class="widget-subtitle">Habit completion rate across each week</p></div>
           </div>
-          <div class="chart-container-md">
-            <canvas id="weeklyComparisonChart"></canvas>
-          </div>
+          <div class="chart-container-md"><canvas id="weeklyComparisonChart"></canvas></div>
         </div>
-
-        <!-- Weekly Review Cards Grid -->
-        <div class="weekly-cards-grid" id="weeklyCardsContainer">
-          <!-- Dynamic cards for Week 1..5 -->
-        </div>
+        <div class="weekly-cards-grid" id="weeklyCardsContainer"></div>
       </section>
 
-      <!-- VIEW 6: MONTHLY GOALS -->
+      <!-- ========== VIEW: GOALS ========== -->
       <section class="view-section" id="section-goals">
         <div class="section-top-bar">
           <div class="section-title-wrap">
             <h2>Monthly Goals</h2>
-            <p class="section-subtitle">Track priority milestones with deadline alerts and quick progress updates</p>
+            <p class="section-subtitle">Set and track milestone targets with deadline alerts</p>
           </div>
           <div class="section-actions-wrap">
             <select id="goalCategoryFilter" class="form-select goal-filter-select">
@@ -671,284 +422,155 @@
               <option value="Personal">Personal</option>
               <option value="Wellbeing">Wellbeing</option>
             </select>
-            <button class="btn btn-primary" id="openAddGoalBtn">
-              <i data-lucide="plus"></i> Add Monthly Goal
-            </button>
+            <button class="btn btn-primary" id="openAddGoalBtn"><i data-lucide="plus"></i> Add Goal</button>
           </div>
         </div>
-
-        <!-- Goal Status Tabs & Overall Summary -->
         <div class="goals-toolbar">
           <div class="goal-tabs-group">
-            <button class="goal-status-tab active" data-status="all">All Goals</button>
+            <button class="goal-status-tab active" data-status="all">All</button>
             <button class="goal-status-tab" data-status="in_progress">In Progress</button>
             <button class="goal-status-tab" data-status="completed">Completed</button>
             <button class="goal-status-tab" data-status="not_started">Not Started</button>
             <button class="goal-status-tab" data-status="paused">Paused</button>
           </div>
-          <span class="goals-overall-summary" id="goalsOverallSummaryText">3 of 5 goals completed (60%)</span>
+          <span class="goals-overall-summary" id="goalsOverallSummaryText"></span>
         </div>
-
-        <!-- Goals Cards Grid -->
-        <div class="goals-cards-grid" id="goalsListContainer">
-          <!-- Dynamically populated goal cards -->
-        </div>
+        <div class="goals-cards-grid" id="goalsListContainer"></div>
       </section>
 
-      <!-- VIEW 7: ANALYTICS & INSIGHTS -->
+      <!-- ========== VIEW: ANALYTICS ========== -->
       <section class="view-section" id="section-analytics">
         <div class="section-top-bar">
           <div class="section-title-wrap">
-            <h2>Analytics & Data Insights</h2>
-            <p class="section-subtitle">Objective observations and behavioral metrics computed from real logs</p>
+            <h2>Analytics & Insights</h2>
+            <p class="section-subtitle">Data-driven conclusions from your real habit records</p>
           </div>
         </div>
-
-        <!-- Analytics Overview Stats -->
         <div class="metrics-grid">
           <div class="card metric-card">
-            <div class="metric-top">
-              <span class="metric-title">Overall Consistency</span>
-              <div class="metric-icon-wrap icon-score">
-                <i data-lucide="check-check"></i>
-              </div>
-            </div>
-            <div class="metric-val" id="analyticsConsistencyVal">78%</div>
-            <div class="metric-foot">
-              <span class="metric-badge positive">Month to date</span>
-            </div>
+            <div class="metric-top"><span class="metric-title">Habit Consistency</span><div class="metric-icon-wrap icon-score"><i data-lucide="check-check"></i></div></div>
+            <div class="metric-val" id="analyticsConsistencyVal">—</div>
+            <div class="metric-foot"><span class="metric-badge positive">Month to date</span></div>
           </div>
-
           <div class="card metric-card">
-            <div class="metric-top">
-              <span class="metric-title">Total Productive Hours</span>
-              <div class="metric-icon-wrap icon-study">
-                <i data-lucide="clock"></i>
-              </div>
-            </div>
-            <div class="metric-val" id="analyticsTotalHoursVal">108.5 hrs</div>
-            <div class="metric-foot">
-              <span class="metric-badge neutral">Study + Code + Creative + Read</span>
-            </div>
+            <div class="metric-top"><span class="metric-title">Days Tracked</span><div class="metric-icon-wrap icon-study"><i data-lucide="calendar-check"></i></div></div>
+            <div class="metric-val" id="analyticsTotalHoursVal">—</div>
+            <div class="metric-foot"><span class="metric-badge neutral">Active tracking</span></div>
           </div>
-
           <div class="card metric-card">
-            <div class="metric-top">
-              <span class="metric-title">Study vs Coding</span>
-              <div class="metric-icon-wrap icon-code">
-                <i data-lucide="git-compare"></i>
-              </div>
-            </div>
-            <div class="metric-val" id="analyticsStudyCodingRatio">48.5h / 56.0h</div>
-            <div class="metric-foot">
-              <span class="metric-badge positive">Balanced ratio</span>
-            </div>
+            <div class="metric-top"><span class="metric-title">Focus Sessions</span><div class="metric-icon-wrap icon-code"><i data-lucide="timer"></i></div></div>
+            <div class="metric-val" id="analyticsPomodoroTotal">—</div>
+            <div class="metric-foot"><span class="metric-badge positive">All-time Pomodoros</span></div>
           </div>
-
           <div class="card metric-card">
-            <div class="metric-top">
-              <span class="metric-title">Goal Success Rate</span>
-              <div class="metric-icon-wrap icon-goals">
-                <i data-lucide="trophy"></i>
-              </div>
-            </div>
-            <div class="metric-val" id="analyticsGoalsRateVal">3 of 5 (60%)</div>
-            <div class="metric-foot">
-              <span class="metric-badge positive">On track</span>
-            </div>
+            <div class="metric-top"><span class="metric-title">Goals Success Rate</span><div class="metric-icon-wrap icon-goals"><i data-lucide="trophy"></i></div></div>
+            <div class="metric-val" id="analyticsGoalsRateVal">—</div>
+            <div class="metric-foot"><span class="metric-badge positive">Monthly</span></div>
           </div>
         </div>
-
-        <!-- Insights List Section -->
         <div class="card analytics-insights-card">
           <div class="widget-header">
-            <div>
-              <h3 class="widget-title"><i data-lucide="sparkles"></i> Data-Driven Smart Insights</h3>
-              <p class="widget-subtitle">Automated conclusions derived from your recorded habits and hours</p>
-            </div>
+            <div><h3 class="widget-title"><i data-lucide="sparkles"></i> Smart Insights</h3><p class="widget-subtitle">Computed from your actual recorded data</p></div>
           </div>
-          <div class="smart-insights-list" id="smartInsightsList">
-            <!-- Dynamic insight cards -->
-          </div>
+          <div class="smart-insights-list" id="smartInsightsList"></div>
         </div>
-
-        <!-- Charts Grid -->
         <div class="analytics-charts-grid">
-          
-          <!-- Habit Consistency Ranking (Horizontal Bar Chart) -->
           <div class="card analytics-chart-card">
-            <div class="widget-header">
-              <div>
-                <h3 class="widget-title">Habit Consistency Rankings</h3>
-                <p class="widget-subtitle">Ranked by completion rate across active days</p>
-              </div>
-            </div>
-            <div class="chart-container-lg">
-              <canvas id="analyticsHabitRankingChart"></canvas>
-            </div>
+            <div class="widget-header"><div><h3 class="widget-title">Habit Consistency Rankings</h3><p class="widget-subtitle">Ranked by daily completion rate</p></div></div>
+            <div class="chart-container-lg"><canvas id="analyticsHabitRankingChart"></canvas></div>
           </div>
-
-          <!-- Weekly Productivity Trends -->
           <div class="card analytics-chart-card">
-            <div class="widget-header">
-              <div>
-                <h3 class="widget-title">Weekly Focus Allocation</h3>
-                <p class="widget-subtitle">Study and Coding hours across weeks</p>
-              </div>
-            </div>
-            <div class="chart-container-lg">
-              <canvas id="analyticsWeeklyTrendChart"></canvas>
-            </div>
+            <div class="widget-header"><div><h3 class="widget-title">Weekly Consistency</h3><p class="widget-subtitle">Week-by-week habit completion %</p></div></div>
+            <div class="chart-container-lg"><canvas id="analyticsWeeklyTrendChart"></canvas></div>
           </div>
-
         </div>
       </section>
 
-      <!-- VIEW 8: SETTINGS -->
+      <!-- ========== VIEW: SETTINGS ========== -->
       <section class="view-section" id="section-settings">
         <div class="section-top-bar">
           <div class="section-title-wrap">
-            <h2>Settings & Data Management</h2>
-            <p class="section-subtitle">Customize your aesthetic theme, manage backups, and export CSV reports</p>
+            <h2>Settings</h2>
+            <p class="section-subtitle">Personalize your theme, Pomodoro timing, and manage data</p>
           </div>
         </div>
-
         <div class="settings-grid">
-          
-          <!-- Profile & Visual Theme Settings -->
+
+          <!-- Personalization -->
           <div class="card settings-card">
             <h3 class="settings-card-title"><i data-lucide="user"></i> Personalization</h3>
-            
             <div class="form-group">
               <label for="settingUserNameInput">Display Name</label>
               <div class="input-with-button">
-                <input type="text" id="settingUserNameInput" class="form-input" placeholder="Jahnvi">
+                <input type="text" id="settingUserNameInput" class="form-input" placeholder="Your name">
                 <button class="btn btn-secondary" id="saveUserNameBtn">Save</button>
               </div>
             </div>
-
-            <!-- Appearance Mode -->
             <div class="form-group">
               <label>Interface Mode</label>
               <div class="theme-options-row">
-                <button type="button" class="theme-option-btn active" data-theme="light">
-                  <i data-lucide="sun"></i> Light Pastel
-                </button>
-                <button type="button" class="theme-option-btn" data-theme="dark">
-                  <i data-lucide="moon"></i> Soft Dark
-                </button>
+                <button class="theme-option-btn active" data-theme="light"><i data-lucide="sun"></i> Light</button>
+                <button class="theme-option-btn" data-theme="dark"><i data-lucide="moon"></i> Dark</button>
               </div>
             </div>
-
-            <!-- Accent Palette Selection -->
             <div class="form-group">
-              <label>Accent Color Palette</label>
+              <label>Accent Palette</label>
               <div class="accent-palette-picker">
-                <button class="accent-picker-swatch swatch-sage active" data-accent="sage" title="Sage Garden">
-                  <span class="swatch-color" style="background: #6B8E71;"></span>
-                  <span class="swatch-name">Sage</span>
+                <button class="accent-picker-swatch active" data-accent="sage" title="Sage">
+                  <span class="swatch-color" style="background:#6B8E71"></span><span class="swatch-name">Sage</span>
                 </button>
-                <button class="accent-picker-swatch swatch-dusty-blue" data-accent="dusty-blue" title="Dusty Ocean">
-                  <span class="swatch-color" style="background: #5B8296;"></span>
-                  <span class="swatch-name">Dusty Blue</span>
+                <button class="accent-picker-swatch" data-accent="dusty-blue" title="Dusty Blue">
+                  <span class="swatch-color" style="background:#5B8296"></span><span class="swatch-name">Blue</span>
                 </button>
-                <button class="accent-picker-swatch swatch-lavender" data-accent="lavender" title="Lavender Mist">
-                  <span class="swatch-color" style="background: #8B7EA6;"></span>
-                  <span class="swatch-name">Lavender</span>
+                <button class="accent-picker-swatch" data-accent="lavender" title="Lavender">
+                  <span class="swatch-color" style="background:#8B7EA6"></span><span class="swatch-name">Lavender</span>
                 </button>
-                <button class="accent-picker-swatch swatch-blush" data-accent="blush" title="Blush Rose">
-                  <span class="swatch-color" style="background: #D88279;"></span>
-                  <span class="swatch-name">Blush</span>
+                <button class="accent-picker-swatch" data-accent="blush" title="Blush">
+                  <span class="swatch-color" style="background:#D88279"></span><span class="swatch-name">Blush</span>
                 </button>
-                <button class="accent-picker-swatch swatch-peach" data-accent="peach" title="Warm Peach">
-                  <span class="swatch-color" style="background: #DE8A5A;"></span>
-                  <span class="swatch-name">Peach</span>
+                <button class="accent-picker-swatch" data-accent="peach" title="Peach">
+                  <span class="swatch-color" style="background:#DE8A5A"></span><span class="swatch-name">Peach</span>
                 </button>
               </div>
             </div>
-
-            <!-- Calendar Start of Week -->
             <div class="form-group">
               <label>Calendar Start Day</label>
               <div class="radio-group-row">
-                <label class="radio-label">
-                  <input type="radio" name="weekStartsOn" value="1" checked>
-                  <span>Monday</span>
-                </label>
-                <label class="radio-label">
-                  <input type="radio" name="weekStartsOn" value="0">
-                  <span>Sunday</span>
-                </label>
+                <label class="radio-label"><input type="radio" name="weekStartsOn" value="1" checked><span>Monday</span></label>
+                <label class="radio-label"><input type="radio" name="weekStartsOn" value="0"><span>Sunday</span></label>
               </div>
             </div>
           </div>
 
-          <!-- Data Management & Backups -->
+          <!-- Data Management -->
           <div class="card settings-card">
             <h3 class="settings-card-title"><i data-lucide="database"></i> Data Management</h3>
-            
-            <p class="settings-note">
-              All habits, logs, and goals are stored securely inside your browser's LocalStorage. You can export a JSON backup at any time or generate monthly spreadsheet reports.
-            </p>
-
+            <p class="settings-note">All data is stored locally in your browser. Export regularly to avoid loss.</p>
             <div class="data-actions-stack">
-              <!-- Export JSON -->
               <div class="data-action-item">
-                <div>
-                  <strong>Export JSON Backup</strong>
-                  <p>Download a complete file containing all your habits, logs, and goals.</p>
-                </div>
-                <button class="btn btn-secondary" id="exportJsonBtn">
-                  <i data-lucide="download"></i> Export JSON
-                </button>
+                <div><strong>Export JSON Backup</strong><p>Download complete data snapshot.</p></div>
+                <button class="btn btn-secondary" id="exportJsonBtn"><i data-lucide="download"></i> Export</button>
               </div>
-
-              <!-- Import JSON -->
               <div class="data-action-item">
-                <div>
-                  <strong>Import JSON Backup</strong>
-                  <p>Restore or merge tracker data from a previous JSON backup file.</p>
-                </div>
+                <div><strong>Import JSON Backup</strong><p>Restore from a previous backup file.</p></div>
                 <label class="btn btn-secondary file-upload-btn">
-                  <i data-lucide="upload"></i> Import JSON
-                  <input type="file" id="importJsonFileInput" accept=".json" style="display: none;">
+                  <i data-lucide="upload"></i> Import
+                  <input type="file" id="importJsonFileInput" accept=".json" style="display:none">
                 </label>
               </div>
-
-              <!-- Export CSV -->
               <div class="data-action-item">
-                <div>
-                  <strong>Monthly CSV Report</strong>
-                  <p>Generate a spreadsheet report for <span class="active-month-text">November 2026</span>.</p>
-                </div>
-                <button class="btn btn-secondary" id="exportCsvBtn">
-                  <i data-lucide="file-spreadsheet"></i> Download CSV
-                </button>
+                <div><strong>Monthly CSV Report</strong><p>Habit summary for <span class="active-month-text">this month</span>.</p></div>
+                <button class="btn btn-secondary" id="exportCsvBtn"><i data-lucide="file-spreadsheet"></i> Download</button>
               </div>
-
-              <!-- Seed Demo Data -->
               <div class="data-action-item">
-                <div>
-                  <strong>Seed Sample Data</strong>
-                  <p>Fill the active month with realistic demo entries to test all analytics.</p>
-                </div>
-                <button class="btn btn-secondary" id="seedDemoDataBtn">
-                  <i data-lucide="sparkles"></i> Load Demo Data
-                </button>
+                <div><strong>Load Demo Data</strong><p>Populate with realistic sample entries.</p></div>
+                <button class="btn btn-secondary" id="seedDemoDataBtn"><i data-lucide="sparkles"></i> Seed</button>
               </div>
-
-              <!-- Clear Data -->
               <div class="data-action-item danger-zone">
-                <div>
-                  <strong class="text-danger">Reset All Application Data</strong>
-                  <p>Wipe all stored tracker data. This action cannot be reversed.</p>
-                </div>
-                <button class="btn btn-danger" id="clearAllDataBtn">
-                  <i data-lucide="trash-2"></i> Reset Data
-                </button>
+                <div><strong class="text-danger">Reset All Data</strong><p>Permanently wipe all stored records.</p></div>
+                <button class="btn btn-danger" id="clearAllDataBtn"><i data-lucide="trash-2"></i> Reset</button>
               </div>
             </div>
-
           </div>
 
         </div>
@@ -957,25 +579,70 @@
     </main>
   </div>
 
+  <!-- CUSTOMIZE FAB -->
+  <button class="customize-fab" id="customizeFab" title="Customize Dashboard">
+    <i data-lucide="palette"></i>
+  </button>
+
+  <!-- CUSTOMIZE PANEL -->
+  <div class="customize-overlay" id="customizePanelOverlay"></div>
+  <div class="customize-panel" id="customizePanel">
+    <div class="customize-panel-header">
+      <h3>Customize Dashboard</h3>
+      <button class="btn-icon-tiny" id="customizePanelClose"><i data-lucide="x"></i></button>
+    </div>
+
+    <!-- Background Themes -->
+    <div class="customize-section">
+      <h4 class="customize-section-title">Background Theme</h4>
+      <div class="bg-theme-row">
+        <button class="bg-theme-btn active" data-bg="cream"><span class="bg-swatch" style="background:#FAF8F5"></span>Cream</button>
+        <button class="bg-theme-btn" data-bg="lavender"><span class="bg-swatch" style="background:linear-gradient(135deg,#F5F0FB,#EEF2FB)"></span>Lavender</button>
+        <button class="bg-theme-btn" data-bg="sage"><span class="bg-swatch" style="background:linear-gradient(135deg,#EFF6EF,#F3F8F0)"></span>Sage</button>
+        <button class="bg-theme-btn" data-bg="blush"><span class="bg-swatch" style="background:linear-gradient(135deg,#FEF0F0,#FFF5F3)"></span>Blush</button>
+        <button class="bg-theme-btn" data-bg="sky"><span class="bg-swatch" style="background:linear-gradient(135deg,#EFF5FD,#F0F4FA)"></span>Sky</button>
+      </div>
+    </div>
+
+    <!-- Widget Visibility -->
+    <div class="customize-section">
+      <h4 class="customize-section-title">Widget Visibility</h4>
+      <div class="widget-toggles-list">
+        <label class="widget-toggle-row"><span>Today's Habits</span><input type="checkbox" class="widget-toggle-cb toggle-checkbox" data-widget="todayCheckIn" checked></label>
+        <label class="widget-toggle-row"><span>Habit Trend Chart</span><input type="checkbox" class="widget-toggle-cb toggle-checkbox" data-widget="habitTrend" checked></label>
+        <label class="widget-toggle-row"><span>Weekly Bar Chart</span><input type="checkbox" class="widget-toggle-cb toggle-checkbox" data-widget="weeklyBar" checked></label>
+        <label class="widget-toggle-row"><span>Category Chart</span><input type="checkbox" class="widget-toggle-cb toggle-checkbox" data-widget="categoryChart" checked></label>
+        <label class="widget-toggle-row"><span>Goals Overview</span><input type="checkbox" class="widget-toggle-cb toggle-checkbox" data-widget="goalsOverview" checked></label>
+        <label class="widget-toggle-row"><span>Activity Heatmap</span><input type="checkbox" class="widget-toggle-cb toggle-checkbox" data-widget="heatmap" checked></label>
+      </div>
+    </div>
+
+    <!-- Sticker Palette -->
+    <div class="customize-section">
+      <h4 class="customize-section-title">Add Stickers 🎨</h4>
+      <p class="customize-hint">Click to place. Drag to reposition. Right-click or long-press to remove.</p>
+      <div class="sticker-palette-grid" id="stickerPaletteGrid"></div>
+      <button class="btn btn-secondary btn-full-width" id="clearStickersBtn" style="margin-top:10px">
+        <i data-lucide="trash-2"></i> Clear All Stickers
+      </button>
+    </div>
+  </div>
+
   <!-- MODALS -->
 
-  <!-- 1. Add / Edit Habit Modal -->
+  <!-- Add/Edit Habit Modal -->
   <div class="modal-backdrop" id="habitModal">
     <div class="modal-dialog">
       <div class="modal-header">
-        <h3 class="modal-title" id="habitModalTitle">Add New Habit</h3>
-        <button class="btn-icon-tiny" data-close-modal="habitModal" aria-label="Close modal">
-          <i data-lucide="x"></i>
-        </button>
+        <h3 class="modal-title" id="habitModalTitle">Add Habit</h3>
+        <button class="btn-icon-tiny" data-close-modal="habitModal"><i data-lucide="x"></i></button>
       </div>
-
       <form id="habitModalForm">
         <div class="modal-body">
           <div class="form-group">
             <label for="habitNameInput">Habit Title *</label>
-            <input type="text" id="habitNameInput" class="form-input" placeholder="e.g. Morning 30-min run" required>
+            <input type="text" id="habitNameInput" class="form-input" placeholder="e.g. Morning run" required maxlength="80">
           </div>
-
           <div class="form-row-2">
             <div class="form-group">
               <label for="habitCategorySelect">Category</label>
@@ -988,23 +655,20 @@
                 <option value="Wellbeing">Wellbeing</option>
               </select>
             </div>
-
             <div class="form-group">
               <label for="habitFrequencySelect">Frequency</label>
               <select id="habitFrequencySelect" class="form-select">
-                <option value="daily">Everyday (Daily)</option>
-                <option value="weekdays">Weekdays (Mon-Fri)</option>
-                <option value="weekends">Weekends (Sat-Sun)</option>
+                <option value="daily">Daily</option>
+                <option value="weekdays">Weekdays</option>
+                <option value="weekends">Weekends</option>
               </select>
             </div>
           </div>
-
           <div class="form-group">
             <label for="habitTargetDays">Monthly Target Days (1–31)</label>
             <input type="number" id="habitTargetDays" class="form-input" min="1" max="31" value="30">
           </div>
         </div>
-
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-close-modal="habitModal">Cancel</button>
           <button type="submit" class="btn btn-primary" id="habitModalSubmitBtn">Create Habit</button>
@@ -1013,28 +677,23 @@
     </div>
   </div>
 
-  <!-- 2. Add / Edit Monthly Goal Modal -->
+  <!-- Add/Edit Goal Modal -->
   <div class="modal-backdrop" id="goalModal">
     <div class="modal-dialog">
       <div class="modal-header">
-        <h3 class="modal-title" id="goalModalTitle">Add Monthly Goal</h3>
-        <button class="btn-icon-tiny" data-close-modal="goalModal" aria-label="Close modal">
-          <i data-lucide="x"></i>
-        </button>
+        <h3 class="modal-title" id="goalModalTitle">Add Goal</h3>
+        <button class="btn-icon-tiny" data-close-modal="goalModal"><i data-lucide="x"></i></button>
       </div>
-
       <form id="goalModalForm">
         <div class="modal-body">
           <div class="form-group">
             <label for="goalTitleInput">Goal Title *</label>
-            <input type="text" id="goalTitleInput" class="form-input" placeholder="e.g. Complete 50 hours of DSA coding" required>
+            <input type="text" id="goalTitleInput" class="form-input" placeholder="e.g. Read 2 books" required maxlength="100">
           </div>
-
           <div class="form-group">
-            <label for="goalDescInput">Description & Success Metric</label>
-            <textarea id="goalDescInput" class="form-textarea" rows="2" placeholder="Brief outline of milestones and criteria..."></textarea>
+            <label for="goalDescInput">Description</label>
+            <textarea id="goalDescInput" class="form-textarea" rows="2" placeholder="Brief outline…" maxlength="300"></textarea>
           </div>
-
           <div class="form-row-2">
             <div class="form-group">
               <label for="goalCategoryInput">Category</label>
@@ -1047,34 +706,29 @@
                 <option value="Wellbeing">Wellbeing</option>
               </select>
             </div>
-
             <div class="form-group">
               <label for="goalPriorityInput">Priority</label>
               <select id="goalPriorityInput" class="form-select">
-                <option value="high">High Priority</option>
-                <option value="medium" selected>Medium Priority</option>
-                <option value="low">Low Priority</option>
+                <option value="high">High</option>
+                <option value="medium" selected>Medium</option>
+                <option value="low">Low</option>
               </select>
             </div>
           </div>
-
           <div class="form-row-3">
             <div class="form-group">
-              <label for="goalTargetInput">Target Value *</label>
-              <input type="number" id="goalTargetInput" class="form-input" min="1" step="any" value="50" required>
+              <label for="goalTargetInput">Target *</label>
+              <input type="number" id="goalTargetInput" class="form-input" min="1" value="10" required>
             </div>
-
             <div class="form-group">
-              <label for="goalCurrentInput">Current Value</label>
-              <input type="number" id="goalCurrentInput" class="form-input" min="0" step="any" value="0">
+              <label for="goalCurrentInput">Current</label>
+              <input type="number" id="goalCurrentInput" class="form-input" min="0" value="0">
             </div>
-
             <div class="form-group">
               <label for="goalUnitInput">Unit</label>
-              <input type="text" id="goalUnitInput" class="form-input" placeholder="e.g. hours, books, tasks">
+              <input type="text" id="goalUnitInput" class="form-input" placeholder="hours / books" maxlength="30">
             </div>
           </div>
-
           <div class="form-row-2">
             <div class="form-group">
               <label for="goalStatusInput">Status</label>
@@ -1085,16 +739,13 @@
                 <option value="paused">Paused</option>
               </select>
             </div>
-
             <div class="form-group">
               <label for="goalDeadlineInput">Deadline</label>
               <input type="date" id="goalDeadlineInput" class="form-input">
             </div>
           </div>
-
-          <input type="hidden" id="goalStartDateInput" value="">
+          <input type="hidden" id="goalStartDateInput">
         </div>
-
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-close-modal="goalModal">Cancel</button>
           <button type="submit" class="btn btn-primary" id="goalModalSubmitBtn">Create Goal</button>
@@ -1103,140 +754,68 @@
     </div>
   </div>
 
-  <!-- 3. Day Overview & Inline Habit Check Modal -->
+  <!-- Day Detail Modal -->
   <div class="modal-backdrop" id="dayDetailModal">
     <div class="modal-dialog modal-dialog-lg">
       <div class="modal-header">
         <div>
-          <h3 class="modal-title" id="dayModalTitle">Sunday, November 15, 2026</h3>
-          <span class="modal-subtitle">Daily review and habit checklist</span>
+          <h3 class="modal-title" id="dayModalTitle">Day Overview</h3>
+          <span class="modal-subtitle">Tap habits to toggle for this date</span>
         </div>
-        <button class="btn-icon-tiny" data-close-modal="dayDetailModal" aria-label="Close modal">
-          <i data-lucide="x"></i>
-        </button>
+        <button class="btn-icon-tiny" data-close-modal="dayDetailModal"><i data-lucide="x"></i></button>
       </div>
-
       <div class="modal-body">
-        
-        <!-- Day Stats Strip -->
         <div class="day-stats-strip">
           <div class="day-stat-col">
-            <span class="d-label">Focused Total</span>
-            <strong class="d-val" id="modalTotalHoursVal">0 hrs</strong>
-          </div>
-          <div class="day-stat-col">
-            <span class="d-label">Study</span>
-            <strong class="d-val" id="modalStudyVal">0 hrs</strong>
-          </div>
-          <div class="day-stat-col">
-            <span class="d-label">Coding</span>
-            <strong class="d-val" id="modalCodingVal">0 hrs</strong>
-          </div>
-          <div class="day-stat-col">
-            <span class="d-label">Exercise</span>
-            <strong class="d-val" id="modalExerciseVal">0 mins</strong>
-          </div>
-          <div class="day-stat-col">
-            <span class="d-label">Reading</span>
-            <strong class="d-val" id="modalReadingVal">0 mins</strong>
-          </div>
-          <div class="day-stat-col">
-            <span class="d-label">Creative</span>
-            <strong class="d-val" id="modalCreativeVal">0 hrs</strong>
-          </div>
-          <div class="day-stat-col">
-            <span class="d-label">Mood</span>
-            <strong class="d-val" id="modalMoodVal">Good</strong>
-          </div>
-          <div class="day-stat-col">
-            <span class="d-label">Energy</span>
-            <strong class="d-val" id="modalEnergyVal">4 / 5</strong>
+            <span class="d-label">Habits Done</span>
+            <strong class="d-val" id="modalHabitsCountVal">0 / 0</strong>
           </div>
         </div>
-
-        <!-- Habits Checklist -->
-        <div class="modal-section-title">
-          <i data-lucide="check-square"></i>
-          <span>Habits for this Day (Click to toggle)</span>
-        </div>
-        <div class="modal-habits-checklist-grid" id="modalHabitsCheckList">
-          <!-- Populated dynamically -->
-        </div>
-
-        <!-- Day Reflections Box -->
-        <div class="modal-section-title" style="margin-top: 18px;">
-          <i data-lucide="feather"></i>
-          <span>Reflections & Journal</span>
-        </div>
-        <div class="modal-reflection-content" id="modalNotesVal">
-          No notes recorded for this date.
-        </div>
-
+        <div class="modal-section-title"><i data-lucide="check-square"></i><span>Habits (click to toggle)</span></div>
+        <div class="modal-habits-checklist-grid" id="modalHabitsCheckList"></div>
       </div>
-
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-close-modal="dayDetailModal">Close</button>
-        <button type="button" class="btn btn-primary" id="modalJumpToLogBtn">
-          <i data-lucide="edit-3"></i> Edit Full Day Log
-        </button>
       </div>
     </div>
   </div>
 
-  <!-- 4. Quick Add Floating Options Modal -->
+  <!-- Quick Add Modal -->
   <div class="modal-backdrop" id="quickAddModal">
     <div class="modal-dialog modal-dialog-sm">
       <div class="modal-header">
         <h3 class="modal-title">Quick Action</h3>
-        <button class="btn-icon-tiny" data-close-modal="quickAddModal" aria-label="Close modal">
-          <i data-lucide="x"></i>
-        </button>
+        <button class="btn-icon-tiny" data-close-modal="quickAddModal"><i data-lucide="x"></i></button>
       </div>
       <div class="modal-body quick-options-list">
-        <button class="quick-option-btn" id="quickOptDailyLog">
-          <div class="quick-opt-icon icon-log">
-            <i data-lucide="edit-3"></i>
-          </div>
-          <div class="quick-opt-text">
-            <strong>Log Today's Performance</strong>
-            <span>Record study hours, coding, exercise, and mood</span>
-          </div>
-        </button>
-
         <button class="quick-option-btn" id="quickOptAddHabit">
-          <div class="quick-opt-icon icon-habit">
-            <i data-lucide="check-circle-2"></i>
-          </div>
-          <div class="quick-opt-text">
-            <strong>Create New Habit</strong>
-            <span>Add a daily or weekly routine to your matrix</span>
-          </div>
+          <div class="quick-opt-icon icon-habit"><i data-lucide="check-circle-2"></i></div>
+          <div class="quick-opt-text"><strong>Add New Habit</strong><span>Track a daily or weekly routine</span></div>
         </button>
-
+        <button class="quick-option-btn" id="quickOptFocusTimer">
+          <div class="quick-opt-icon icon-log"><i data-lucide="timer"></i></div>
+          <div class="quick-opt-text"><strong>Open Focus Timer</strong><span>Start a Pomodoro or stopwatch session</span></div>
+        </button>
         <button class="quick-option-btn" id="quickOptAddGoal">
-          <div class="quick-opt-icon icon-goal">
-            <i data-lucide="target"></i>
-          </div>
-          <div class="quick-opt-text">
-            <strong>Add Monthly Goal</strong>
-            <span>Define a milestone target with deadline alerts</span>
-          </div>
+          <div class="quick-opt-icon icon-goal"><i data-lucide="target"></i></div>
+          <div class="quick-opt-text"><strong>Add Monthly Goal</strong><span>Define a milestone with deadline tracking</span></div>
         </button>
       </div>
     </div>
   </div>
 
-  <!-- Toast Notification Container -->
+  <!-- Toast Container -->
   <div class="toast-container" id="toastContainer"></div>
 
-  <!-- Core App Scripts -->
+  <!-- Scripts -->
   <script src="js/storage.js"></script>
   <script src="js/habits.js"></script>
-  <script src="js/dailyLog.js"></script>
   <script src="js/calendar.js"></script>
   <script src="js/weekly.js"></script>
   <script src="js/goals.js"></script>
   <script src="js/analytics.js"></script>
+  <script src="js/pomodoro.js"></script>
+  <script src="js/customize.js"></script>
   <script src="js/app.js"></script>
 
 </body>
